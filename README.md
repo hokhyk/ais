@@ -21,6 +21,7 @@ User -> Borwser -> HTTP Request -> main.go -> 分配到相應之控制器 -> 初
 1. 將 .env.swp 置換成 .env
 2. .env內參數對應如下
 ```
+port=[本系統運行的Port]
 hrm.url=[HRM 系統網址]
 resis.addr=[Redis 位址]
 redis.password=[Redis 密碼]

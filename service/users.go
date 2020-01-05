@@ -1,16 +1,17 @@
 package service
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/teed7334-restore/ais/libs"
 	"log"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/teed7334-restore/ais/libs"
+	"golang.org/x/crypto/scrypt"
 )
 
 //Users 使用者相關資料結構
@@ -92,11 +93,8 @@ func (u *Users) validateUser(login, password string, curl Curl) bool {
 //generateHash 生成Hash值
 func (u *Users) generateHash(login string) string {
 	salt := os.Getenv("salt")
-	data := []byte(login + salt)
-	s := sha256.New()
-	s.Write(data)
-	hash := s.Sum(nil)
-	txt := hex.EncodeToString(hash)
+	dk, _ := scrypt.Key([]byte(login), []byte(salt), 32768, 8, 1, 32)
+	txt := base64.StdEncoding.EncodeToString(dk)
 	log.Println(txt)
 	return txt
 }
