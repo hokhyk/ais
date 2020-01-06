@@ -36,3 +36,52 @@ salt=[鹽值，供SHA256加密用]
 3. 請款/請購上級主管
 4. 請款/請購作廢
 5. 管理員檢閱當月請款/請購細項
+
+## API
+只要回傳的 code 不是 200 ，通通都是有問題， message 會說明是什麼原因
+
+登入
+```
+# HTTP POST
+url: http://[Path To]/users/login
+
+# 參數 
+login=[HRM使用者帳號]
+password=[HRM使用者密碼]
+
+# 回傳 
+{
+    code: 200
+    message: [令牌]
+}
+```
+
+驗証使用者是否登入
+```
+# HTTP POST
+url: http://[Path To]/users/checkLogin
+
+# 參數
+token=[令牌]
+
+# 回傳
+{
+    code: 200
+    message: "true"
+}
+```
+
+登出
+```
+# HTTP GET
+url: http://[Path To]/users/logout
+
+# 參數
+token=[令牌]
+
+# 回傳
+{
+    code: 200
+    message: "true"
+}
+```
