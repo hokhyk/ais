@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,12 +9,30 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/teed7334-restore/ais/libs"
 	"golang.org/x/crypto/scrypt"
 )
 
 //Users 使用者相關資料結構
 type Users struct {
+	ID           string `json:"id"`
+	FirstName    string `json:"firstname"`
+	LastName     string `json:"lastname"`
+	Account      string `json:"login"`
+	EMail        string `json:"email"`
+	Role         string `json:"role"`
+	Manager      string `json:"manager"`
+	Country      string `json:"country"`
+	Organization string `json:"organization"`
+	Contract     string `json:"contract"`
+	Position     string `json:"position"`
+	Identifier   string `json:"identifier"`
+	Language     string `json:"language"`
+	LDAPPath     string `json:"ldap_path"`
+	Active       string `json:"active"`
+	TimeZone     string `json:"timezone"`
+	Calendar     string `json:"calendar"`
 }
 
 type token struct {
@@ -36,17 +53,40 @@ func (u Users) New() *Users {
 }
 
 //Login 登入
-func (u *Users) Login(login, password string) (status int, hash string) {
+func (u *Users) Login(login, password string) (int, string) {
 	valid := u.validateUser(login, password, curl)
 	if valid != true {
 		return -1, ""
 	}
-	hash = u.generateHash(login)
+	hash := u.generateHash(login)
 	token := u.generateToken(login, hash, redis)
 	if token != true {
 		return -2, ""
 	}
 	return 1, hash
+}
+
+//GetUser 取得使用者資訊
+func (u *Users) GetUser(hash string) (int, *Users) {
+	data := redis.Get(hash)
+	if data == "" {
+		return -1, u
+	}
+	token := &token{}
+	json.Unmarshal([]byte(data), token)
+	q := url.Values{}
+	q.Add("login", token.User)
+	params := []byte(q.Encode())
+	header := make(map[string]string)
+	header["Content-Type"] = "application/x-www-form-urlencoded"
+	api := fmt.Sprintf("%s/hack/getUserByAjax", os.Getenv("hrm.url"))
+	result := curl.Post(api, params, header)
+	err := json.Unmarshal(result, u)
+	if err != nil {
+		log.Println(err)
+		return -2, u
+	}
+	return 1, u
 }
 
 //Logout 登出
@@ -94,7 +134,7 @@ func (u *Users) validateUser(login, password string, curl Curl) bool {
 func (u *Users) generateHash(login string) string {
 	salt := os.Getenv("salt")
 	dk, _ := scrypt.Key([]byte(login), []byte(salt), 32768, 8, 1, 32)
-	txt := base64.StdEncoding.EncodeToString(dk)
+	txt := base58.Encode(dk)
 	log.Println(txt)
 	return txt
 }

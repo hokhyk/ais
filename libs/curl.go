@@ -25,7 +25,7 @@ func (c *Curl) Post(url string, params []byte, header map[string]string) []byte 
 	}
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 	}
 	for k, v := range header {
 		req.Header.Add(k, v)
@@ -33,12 +33,12 @@ func (c *Curl) Post(url string, params []byte, header map[string]string) []byte 
 	clt := http.Client{}
 	resp, err := clt.Do(req)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 	}
 	defer req.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 	}
 	return body
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -16,6 +17,39 @@ var users = service.Users{}.New()
 //New 建構式
 func (u Users) New() *Users {
 	return &u
+}
+
+//GetUser 取得使用者
+func (u *Users) GetUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		content := buildRO(201, "不支持此種HTTP Method")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	token := r.FormValue("token")
+
+	if token == "" {
+		content := buildRO(202, "使用者令牌為空白")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	status, message := users.GetUser(token)
+
+	switch status {
+	case -1:
+		content := buildRO(203, "請登入會員")
+		fmt.Fprintf(w, content)
+	case -2:
+		content := buildRO(204, "查無此會員")
+		fmt.Fprintf(w, content)
+	case 1:
+		result, _ := json.Marshal(message)
+		response := string(result)
+		content := buildRO(200, response)
+		fmt.Fprintf(w, content)
+	}
 }
 
 //Login 登入

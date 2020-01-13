@@ -85,3 +85,18 @@ token=[令牌]
     message: "true"
 }
 ```
+
+取得使用者資訊
+```
+# HTTP POST
+url: http://[Path To]/users/getUser
+
+# 參數
+token=[令牌]
+
+# 回傳
+{
+    code: 200
+    message: [使用者資訊JSON]
+}
+```

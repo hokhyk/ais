@@ -13,6 +13,7 @@ var user = controller.Users{}.New()
 
 func main() {
 	port := fmt.Sprintf(":%s", os.Getenv("port"))
+	http.HandleFunc("/users/getUser", user.GetUser)
 	http.HandleFunc("/users/login", user.Login)
 	http.HandleFunc("/users/checkLogin", user.CheckLogin)
 	http.HandleFunc("/users/logout", user.Logout)

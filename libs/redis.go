@@ -24,7 +24,7 @@ func (r Redis) New(addr, password string, db int) *Redis {
 	log.Println(pong)
 
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 	}
 
 	r.Client = client
@@ -36,7 +36,7 @@ func (r Redis) New(addr, password string, db int) *Redis {
 func (r *Redis) Get(key string) string {
 	val, err := r.Client.Get(key).Result()
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 		val = ""
 	}
 	return val
@@ -48,7 +48,7 @@ func (r *Redis) Set(key, value string) bool {
 	status := true
 
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 		status = false
 	}
 
@@ -61,7 +61,7 @@ func (r *Redis) Remove(key string) bool {
 	status := true
 
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
 		status = false
 	}
 
