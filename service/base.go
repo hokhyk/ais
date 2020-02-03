@@ -13,3 +13,8 @@ type Redis interface {
 	Get(key string) string
 	Set(key, value string) bool
 }
+
+//Zip 物件介面
+type Zip interface {
+	Compress(files []string, dst string) int
+}

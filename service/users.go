@@ -10,30 +10,13 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/teed7334-restore/ais/dto"
 	"github.com/teed7334-restore/ais/libs"
 	"golang.org/x/crypto/scrypt"
 )
 
 //Users 使用者相關資料結構
-type Users struct {
-	ID           string `json:"id"`
-	FirstName    string `json:"firstname"`
-	LastName     string `json:"lastname"`
-	Account      string `json:"login"`
-	EMail        string `json:"email"`
-	Role         string `json:"role"`
-	Manager      string `json:"manager"`
-	Country      string `json:"country"`
-	Organization string `json:"organization"`
-	Contract     string `json:"contract"`
-	Position     string `json:"position"`
-	Identifier   string `json:"identifier"`
-	Language     string `json:"language"`
-	LDAPPath     string `json:"ldap_path"`
-	Active       string `json:"active"`
-	TimeZone     string `json:"timezone"`
-	Calendar     string `json:"calendar"`
-}
+type Users struct{}
 
 type token struct {
 	Expired string `json:"expired"`
@@ -67,10 +50,11 @@ func (u *Users) Login(login, password string) (int, string) {
 }
 
 //GetUser 取得使用者資訊
-func (u *Users) GetUser(hash string) (int, *Users) {
+func (u *Users) GetUser(hash string) (int, *dto.Users) {
 	data := redis.Get(hash)
+	dtoUsers := new(dto.Users)
 	if data == "" {
-		return -1, u
+		return -1, dtoUsers
 	}
 	token := &token{}
 	json.Unmarshal([]byte(data), token)
@@ -81,12 +65,12 @@ func (u *Users) GetUser(hash string) (int, *Users) {
 	header["Content-Type"] = "application/x-www-form-urlencoded"
 	api := fmt.Sprintf("%s/hack/getUserByAjax", os.Getenv("hrm.url"))
 	result := curl.Post(api, params, header)
-	err := json.Unmarshal(result, u)
+	err := json.Unmarshal(result, dtoUsers)
 	if err != nil {
 		log.Println(err)
-		return -2, u
+		return -2, dtoUsers
 	}
-	return 1, u
+	return 1, dtoUsers
 }
 
 //Logout 登出

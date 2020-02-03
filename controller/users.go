@@ -9,8 +9,7 @@ import (
 )
 
 //Users 使用者相關資料結構
-type Users struct {
-}
+type Users struct{}
 
 var users = service.Users{}.New()
 
@@ -21,6 +20,7 @@ func (u Users) New() *Users {
 
 //GetUser 取得使用者
 func (u *Users) GetUser(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != "POST" {
 		content := buildRO(201, "不支持此種HTTP Method")
 		fmt.Fprintf(w, content)
@@ -54,6 +54,7 @@ func (u *Users) GetUser(w http.ResponseWriter, r *http.Request) {
 
 //Login 登入
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != "POST" {
 		content := buildRO(201, "不支持此種HTTP Method")
 		fmt.Fprintf(w, content)
@@ -88,13 +89,14 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 
 //Logout 登出
 func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
+
+	if r.Method != "POST" {
 		content := buildRO(201, "不支持此種HTTP Method")
 		fmt.Fprintf(w, content)
 		return
 	}
 
-	token := r.URL.Query()["token"][0]
+	token := r.FormValue("token")
 
 	users.Logout(token)
 
@@ -104,6 +106,7 @@ func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
 
 //CheckLogin 檢查是否處於登入狀態
 func (u *Users) CheckLogin(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != "POST" {
 		content := buildRO(201, "不支持此種HTTP Method")
 		fmt.Fprintf(w, content)
