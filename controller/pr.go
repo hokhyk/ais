@@ -22,222 +22,187 @@ func (pr PR) New() *PR {
 
 //Add 新增請購單
 func (pr *PR) Add(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		content := buildRO(201, "不支持此種HTTP Method")
-		fmt.Fprintf(w, content)
+	dtoPR := new(dto.PR)
+	dtoRO, dtoPR := pr.filterList(r, dtoPR)
+	if dtoRO.Status != 1 {
+		PrintRO(w, dtoRO, "")
 		return
 	}
 
-	dtoPR := new(dto.PR)
-	status, dtoPR := pr.filterList(r, dtoPR)
-	switch status {
-	case -1:
-		content := buildRO(202, "使用者Token有誤")
-		fmt.Fprintf(w, content)
-	case -2:
-		content := buildRO(203, "請選擇支付對象")
-		fmt.Fprintf(w, content)
-	case -3:
-		content := buildRO(204, "請輸入支付廠商")
-		fmt.Fprintf(w, content)
-	case -4:
-		content := buildRO(205, "請選擇入賬類別")
-		fmt.Fprintf(w, content)
-	case -5:
-		content := buildRO(206, "請選擇類別")
-		fmt.Fprintf(w, content)
-	case -6:
-		content := buildRO(207, "請選擇支付方式")
-		fmt.Fprintf(w, content)
-	case -7:
-		content := buildRO(208, "請輸入銀行帳號")
-		fmt.Fprintf(w, content)
-	}
-	if status != 1 {
+	dtoRO, dtoPR = pr.filterDetail(r, dtoPR)
+	if dtoRO.Status != 1 {
+		PrintRO(w, dtoRO, "")
 		return
 	}
 
 	r.ParseMultipartForm(5000000)
 	proof := r.MultipartForm
-	status = spr.Add(dtoPR, proof)
-	switch status {
-	case -1:
-		content := buildRO(209, "未上傳佐証資料")
-		fmt.Fprintf(w, content)
-	case -2:
-		content := buildRO(210, "無法新增檔案")
-		fmt.Fprintf(w, content)
-	case -3:
-		content := buildRO(211, "上傳資料夾權限不符")
-		fmt.Fprintf(w, content)
-	case -4:
-		content := buildRO(212, "無法新增Zip壓縮檔")
-		fmt.Fprintf(w, content)
-	case -5:
-		content := buildRO(213, "伺服器中無對應之Zip壓縮檔")
-		fmt.Fprintf(w, content)
-	case -6:
-		content := buildRO(214, "無法解析Zip壓縮檔")
-		fmt.Fprintf(w, content)
-	case -7:
-		content := buildRO(215, "無法取得Zip壓縮檔檔頭資訊")
-		fmt.Fprintf(w, content)
-	case -8:
-		content := buildRO(216, "無法建立Zip壓縮檔檔頭")
-		fmt.Fprintf(w, content)
-	case -9:
-		content := buildRO(217, "無法寫入檔到到Zip壓縮檔")
-		fmt.Fprintf(w, content)
-	}
-	if status != 1 {
-		return
-	}
-
-	content := buildRO(200, "true")
-	fmt.Fprintf(w, content)
+	dtoRO = spr.Add(dtoPR, proof)
+	PrintRO(w, dtoRO, "true")
 }
 
-func (pr *PR) filterDetail(r *http.Request, dtoPR *dto.PR) (int, *dto.PR) {
+func (pr *PR) filterDetail(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dto.PR) {
 	currency, ok := r.MultipartForm.Value["currency"]
 	if !ok {
-		return -1, dtoPR
+		dtoRO := RO.Build(0, "幣值不得為空")
+		return dtoRO, dtoPR
 	}
 	unitPrice, ok := r.MultipartForm.Value["unit_price"]
 	if !ok {
-		return -2, dtoPR
+		dtoRO := RO.Build(0, "單價不得為空")
+		return dtoRO, dtoPR
 	}
 	quantity, ok := r.MultipartForm.Value["quantity"]
 	if !ok {
-		return -3, dtoPR
+		dtoRO := RO.Build(0, "數量不得為空")
+		return dtoRO, dtoPR
 	}
 	exchangeRate, ok := r.MultipartForm.Value["exchange_rate"]
 	if !ok {
-		return -4, dtoPR
+		dtoRO := RO.Build(0, "匯率不得為空")
+		return dtoRO, dtoPR
 	}
 	tax, ok := r.MultipartForm.Value["tax"]
 	if !ok {
-		return -5, dtoPR
+		dtoRO := RO.Build(0, "稅額不得為空")
+		return dtoRO, dtoPR
 	}
 	for k := range currency {
 		dtoDetail := new(dto.PrDetail)
 		if len(currency) < k {
-			return -6, dtoPR
+			dtoRO := RO.Build(0, "幣值不得為空")
+			return dtoRO, dtoPR
 		}
 		dtoDetail.Currency = currency[k]
 		if len(unitPrice) < k {
-			return -7, dtoPR
+			dtoRO := RO.Build(0, "單價不得為空")
+			return dtoRO, dtoPR
 		}
 		up, err := strconv.ParseFloat(unitPrice[k], 32)
 		if err != nil {
-			return -7, dtoPR
+			dtoRO := RO.Build(0, "單價不得為空")
+			return dtoRO, dtoPR
 		}
 		dtoDetail.UnitPrice = float32(up)
 		qty, err := strconv.Atoi(quantity[k])
 		if err != nil {
-			return -8, dtoPR
+			dtoRO := RO.Build(0, "數量不得為空")
+			return dtoRO, dtoPR
 		}
 		dtoDetail.Quantity = qty
 		er, err := strconv.ParseFloat(exchangeRate[k], 32)
 		if err != nil {
-			return -9, dtoPR
+			dtoRO := RO.Build(0, "匯率不得為空")
+			return dtoRO, dtoPR
 		}
 		dtoDetail.ExchangeRate = float32(er)
 		tx, err := strconv.ParseFloat(tax[k], 32)
 		if err != nil {
-			return -10, dtoPR
+			dtoRO := RO.Build(0, "稅額不得為空")
+			return dtoRO, dtoPR
 		}
 		dtoDetail.Tax = float32(tx)
+		dtoDetail.TotalPrice = dtoDetail.UnitPrice * float32(dtoDetail.Quantity) * dtoDetail.ExchangeRate * (1.0 + dtoDetail.Tax)
+		dtoPR.Detail = append(dtoPR.Detail, *dtoDetail)
 	}
-	return 1, dtoPR
+	dtoRO := RO.Build(1, "")
+	return dtoRO, dtoPR
 }
 
 //filterList 過濾單頭必要參數為空值之參數
-func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (int, *dto.PR) {
-	now := time.Now()
+func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dto.PR) {
 	dtoUsers := new(dto.Users)
 	r.ParseMultipartForm(128)
 
 	token, ok := r.MultipartForm.Value["token"]
 	if !ok {
-		return -1, dtoPR
+		dtoRO := RO.Build(0, "使用者Token有誤")
+		return dtoRO, dtoPR
 	}
-	status, dtoUsers := users.GetUser(token[0])
-	if status != 1 {
-		return -1, dtoPR
+	dtoRO, dtoUsers := users.GetUser(token[0])
+	if dtoRO.Status != 1 {
+		dtoRO := RO.Build(0, "使用者Token有誤")
+		return dtoRO, dtoPR
 	}
 
-	dtoPR.List.OrganizationName = dtoUsers.OrganizationName
+	val, ok := r.MultipartForm.Value["sign_at"]
+	if !ok {
+		dtoRO := RO.Build(0, "請輸入日期")
+		return dtoRO, dtoPR
+	}
+	signAt := fmt.Sprintf("%s 00:00:00", val[0])
+
+	now := time.Now()
+
 	dtoPR.List.OrganizationID = dtoUsers.OrganizationID
 	dtoPR.List.UsersID = dtoUsers.ID
-	dtoPR.List.UsersName = dtoUsers.FirstName + dtoUsers.LastName
-	dtoPR.List.CreateAt = now.Format("2006-01-02 15:04:05")
+	dtoPR.List.SignAt, _ = time.ParseInLocation(TimeFormat, signAt, time.Local)
+	dtoPR.List.CreateAt, _ = time.ParseInLocation(TimeFormat, now.Format(TimeFormat), time.Local)
 	dtoPR.List.Status = 1
 
-	val, ok := r.MultipartForm.Value["pay_to"]
+	val, ok = r.MultipartForm.Value["pay_to"]
 	if !ok {
-		return -2, dtoPR
+		dtoRO := RO.Build(0, "請勾選支付對象")
+		return dtoRO, dtoPR
 	}
 	if val[0] == "" {
-		return -2, dtoPR
+		dtoRO := RO.Build(0, "請勾選支付對象")
+		return dtoRO, dtoPR
 	}
 	payTo, err := strconv.Atoi(val[0])
 	if err != nil {
-		return -2, dtoPR
+		dtoRO := RO.Build(0, "請勾選支付對象")
+		return dtoRO, dtoPR
 	}
 
+	vendorName := ""
 	val, ok = r.MultipartForm.Value["vendor_name"]
-	if !ok {
-		return -3, dtoPR
+	if ok && val[0] == "" && payTo == 1 {
+		dtoRO := RO.Build(0, "請填寫支付廠商")
+		return dtoRO, dtoPR
 	}
-	if val[0] == "" && payTo == 1 {
-		return -3, dtoPR
-	}
-	vendorName := val[0]
+	vendorName = val[0]
 
 	val, ok = r.MultipartForm.Value["pay_type"]
-	if !ok {
-		return -4, dtoPR
-	}
-	if val[0] == "" {
-		return -4, dtoPR
+	if !ok || val[0] == "" {
+		dtoRO := RO.Build(0, "請選擇入賬類別")
+		return dtoRO, dtoPR
 	}
 	payType, err := strconv.Atoi(val[0])
 	if err != nil {
-		return -4, dtoPR
+		dtoRO := RO.Build(0, "請選擇入賬類別")
+		return dtoRO, dtoPR
 	}
 
 	val, ok = r.MultipartForm.Value["list_type"]
-	if !ok {
-		return -5, dtoPR
-	}
-	if val[0] == "" {
-		return -5, dtoPR
+	if !ok || val[0] == "" {
+		dtoRO := RO.Build(0, "請選擇類別")
+		return dtoRO, dtoPR
 	}
 	listType, err := strconv.Atoi(val[0])
 	if err != nil {
-		return -5, dtoPR
+		dtoRO := RO.Build(0, "請選擇類別")
+		return dtoRO, dtoPR
 	}
 
 	val, ok = r.MultipartForm.Value["pay_method"]
-	if !ok {
-		return -6, dtoPR
-	}
-	if val[0] == "" {
-		return -6, dtoPR
+	if !ok || val[0] == "" {
+		dtoRO := RO.Build(0, "請選擇支付方式")
+		return dtoRO, dtoPR
 	}
 	payMethod, err := strconv.Atoi(val[0])
 	if err != nil {
-		return -6, dtoPR
+		dtoRO := RO.Build(0, "請選擇支付方式")
+		return dtoRO, dtoPR
 	}
 
 	val, ok = r.MultipartForm.Value["bank_account"]
-	if !ok {
-		return -7, dtoPR
+	bankAccount := ""
+	if ok && val[0] == "" && payMethod == 3 {
+		dtoRO := RO.Build(0, "請輸入銀行帳號")
+		return dtoRO, dtoPR
 	}
-	if val[0] == "" && payMethod == 3 {
-		return -7, dtoPR
-	}
-	bankAccount := val[0]
+	bankAccount = val[0]
 
 	dtoPR.List.PayTo = payTo
 	dtoPR.List.VendorName = vendorName
@@ -246,5 +211,6 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (int, *dto.PR) {
 	dtoPR.List.PayMethod = payMethod
 	dtoPR.List.BankAccount = bankAccount
 
-	return 1, dtoPR
+	dtoRO = RO.Build(1, "")
+	return dtoRO, dtoPR
 }

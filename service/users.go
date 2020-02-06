@@ -36,25 +36,29 @@ func (u Users) New() *Users {
 }
 
 //Login 登入
-func (u *Users) Login(login, password string) (int, string) {
+func (u *Users) Login(login, password string) (*dto.ResultObject, string) {
 	valid := u.validateUser(login, password, curl)
 	if valid != true {
-		return -1, ""
+		dtoRO := RO.Build(0, "使用者帳號或密碼有誤")
+		return dtoRO, ""
 	}
 	hash := u.generateHash(login)
 	token := u.generateToken(login, hash, redis)
 	if token != true {
-		return -2, ""
+		dtoRO := RO.Build(0, "寫入Token失敗")
+		return dtoRO, ""
 	}
-	return 1, hash
+	dtoRO := RO.Build(1, "")
+	return dtoRO, hash
 }
 
 //GetUser 取得使用者資訊
-func (u *Users) GetUser(hash string) (int, *dto.Users) {
+func (u *Users) GetUser(hash string) (*dto.ResultObject, *dto.Users) {
 	data := redis.Get(hash)
 	dtoUsers := new(dto.Users)
 	if data == "" {
-		return -1, dtoUsers
+		dtoRO := RO.Build(0, "請登入會員")
+		return dtoRO, dtoUsers
 	}
 	token := &token{}
 	json.Unmarshal([]byte(data), token)
@@ -68,9 +72,11 @@ func (u *Users) GetUser(hash string) (int, *dto.Users) {
 	err := json.Unmarshal(result, dtoUsers)
 	if err != nil {
 		log.Println(err)
-		return -2, dtoUsers
+		dtoRO := RO.Build(0, "查無此會員")
+		return dtoRO, dtoUsers
 	}
-	return 1, dtoUsers
+	dtoRO := RO.Build(1, "")
+	return dtoRO, dtoUsers
 }
 
 //Logout 登出
@@ -79,10 +85,11 @@ func (u *Users) Logout(hash string) {
 }
 
 //CheckLogin 檢查是否處於登入狀態
-func (u *Users) CheckLogin(hash string) int {
+func (u *Users) CheckLogin(hash string) *dto.ResultObject {
 	data := redis.Get(hash)
 	if data == "" {
-		return -1
+		dtoRO := RO.Build(0, "此帳號已登出")
+		return dtoRO
 	}
 	token := &token{}
 	json.Unmarshal([]byte(data), token)
@@ -90,9 +97,11 @@ func (u *Users) CheckLogin(hash string) int {
 	now := time.Now()
 	if !now.Before(expired) {
 		redis.Remove(hash)
-		return -2
+		dtoRO := RO.Build(0, "此令牌已過期")
+		return dtoRO
 	}
-	return 1
+	dtoRO := RO.Build(1, "")
+	return dtoRO
 }
 
 //validateUser 驗証使用者
