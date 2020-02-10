@@ -42,6 +42,11 @@ func (pr *PR) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (pr *PR) filterDetail(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dto.PR) {
+	name, ok := r.MultipartForm.Value["name"]
+	if !ok {
+		dtoRO := RO.Build(0, "項目不得為空")
+		return dtoRO, dtoPR
+	}
 	currency, ok := r.MultipartForm.Value["currency"]
 	if !ok {
 		dtoRO := RO.Build(0, "幣值不得為空")
@@ -69,6 +74,11 @@ func (pr *PR) filterDetail(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *
 	}
 	for k := range currency {
 		dtoDetail := new(dto.PrDetail)
+		if len(name) < k {
+			dtoRO := RO.Build(0, "項目不得為空")
+			return dtoRO, dtoPR
+		}
+		dtoDetail.Name = name[k]
 		if len(currency) < k {
 			dtoRO := RO.Build(0, "幣值不得為空")
 			return dtoRO, dtoPR

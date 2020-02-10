@@ -28,6 +28,7 @@ type PrList struct {
 //PrDetail 請購單單身
 type PrDetail struct {
 	ID           int     `json:"id" gorm:"primary_key:yes"`
+	Name         string  `json:"name"`
 	PRListID     int     `json:"pr_list_id"`
 	Currency     string  `json:"currency"`
 	UnitPrice    float32 `json:"unit_price"`
