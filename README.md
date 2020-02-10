@@ -26,6 +26,13 @@ hrm.url=[HRM 系統網址]
 resis.addr=[Redis 位址]
 redis.password=[Redis 密碼]
 redis.db=[Redis 資料庫名稱]
+mysql.host=[MySQL 主機位置]
+mysql.user=[MySQL 帳號]
+mysql.password=[MySQL 密碼]
+mysql.database=[MySQL 資料庫]
+mysql.charset=[MySQL 預設編碼]
+mysql.parsetime=[MySQL 使用本機時間]
+mysql.loc=[MySQL 預設時區]
 salt=[鹽值，供SHA256加密用]
 ```
 3. 此系統架構於Jorani這套HRM系統，所有的員工資料都由HRM調用，使用其他HRM系統與LDAP，請自行撰寫API，與修改使用者驗証相關
