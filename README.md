@@ -106,8 +106,11 @@ token=[令牌]
 # HTTP POST
 url: http://[Path To]/pr/add
 
+# HTTP Header
+Content-Type: multipart/form-data
+
 # 參數
-token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&currency=[幣種]&unit_price=[單價]&quantity=[數量]&exchange_rate=[匯率]&tax=[稅額]
+token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&currency=[幣種]&unit_price=[單價]&quantity=[數量]&exchange_rate=[匯率]&tax=[稅額]&proof=[佐証資料]
 
 # 參數說明
 1. 支付對象，廠商與請款人二擇一，勾選廠商需填入廠商名稱
@@ -122,6 +125,7 @@ token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳
 10. 數量，可以同時多筆，名字都取一樣叫quantity就好
 11. 匯率，可以同時多筆，名字都取一樣叫exchange_rate就好，請給小數點，好比1:29.5，就是29.5
 12. 稅額，可以同時多筆，名字都取一樣叫tax就好，請給小數點，好比5%就是0.05
+13. 佐証資料，可以同時多筆，名字著取一個proof就好，到了Server會通通壓成一個zip檔
 
 # 回傳
 {
