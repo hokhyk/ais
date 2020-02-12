@@ -139,3 +139,18 @@ token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳
     message: "true"
 }
 ```
+
+下載佐証檔
+```
+# HTTP POST
+url: http://[Path To]/download/getFile?proof=[佐証檔名]
+
+# 參數
+token=[令牌]
+
+# 參數說明
+1. 佐証檔名，透過訂購單列表可取得佐証檔名與整段下載網址
+
+# 回傳
+[下載檔案]
+```
