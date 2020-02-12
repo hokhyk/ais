@@ -27,6 +27,12 @@ func (pr PR) New() *PR {
 	return &pr
 }
 
+//SetCancel 作廢請購單
+func (pr *PR) SetCancel(u *dto.Users, id string) *dto.ResultObject {
+	mysql := libs.MySQL{}.New()
+	return pr.doSetCancelToDB(u, id, mysql)
+}
+
 //Add 新增請購單
 func (pr *PR) Add(params *dto.PR, files *multipart.Form) *dto.ResultObject {
 	dtoRO, uploads := pr.doUpload(files)
@@ -117,6 +123,19 @@ func (pr *PR) doRemoveTempFiles(files []string) {
 	for _, file := range files {
 		os.Remove(file)
 	}
+}
+
+//doSetCancelToDB 將作廢資訊寫入資料蟀
+func (pr *PR) doSetCancelToDB(u *dto.Users, id string, m MySQL) *dto.ResultObject {
+	db := m.GetAdater()
+	dtoPrList := &dto.PrList{}
+	count := db.Model(&dtoPrList).Where("id = ? AND users_id = ? AND status != 0", id, u.ID).Update("status", 0).RowsAffected
+	if count == 0 {
+		dtoRO := RO.Build(0, "請購單作廢失敗")
+		return dtoRO
+	}
+	dtoRO := RO.Build(1, "")
+	return dtoRO
 }
 
 //doInsertToDB 將資料寫入資料庫

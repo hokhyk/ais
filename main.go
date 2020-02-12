@@ -46,6 +46,8 @@ func main() {
 	http.Handle("/users/logout", middleware(handler, []string{"POST"}))
 	handler = http.HandlerFunc(pr.Add)
 	http.Handle("/pr/add", middleware(handler, []string{"POST"}))
+	handler = http.HandlerFunc(pr.SetCancel)
+	http.Handle("/pr/setCancel", middleware(handler, []string{"POST"}))
 	handler = http.HandlerFunc(download.GetFile)
 	http.Handle("/download/getFile", middleware(handler, []string{"GET", "POST"}))
 	http.ListenAndServe(port, nil)

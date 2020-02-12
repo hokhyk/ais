@@ -20,6 +20,39 @@ func (pr PR) New() *PR {
 	return &pr
 }
 
+//SetCancel 作廢請購單
+func (pr *PR) SetCancel(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	if token == "" {
+		content := RO.BuildJSON(0, "使用者令牌為空白")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	dtoRO, dtoUsers := users.GetUser(token)
+	if dtoRO.Status != 1 {
+		content := RO.BuildJSON(0, "使用者令牌有誤")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	id := r.FormValue("id")
+	if id == "" {
+		content := RO.BuildJSON(0, "請購單號為空白")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	dtoRO = spr.SetCancel(dtoUsers, id)
+
+	if dtoRO.Status != 1 {
+		PrintRO(w, dtoRO, "")
+		return
+	}
+
+	PrintRO(w, dtoRO, "true")
+}
+
 //Add 新增請購單
 func (pr *PR) Add(w http.ResponseWriter, r *http.Request) {
 	dtoPR := new(dto.PR)
@@ -126,12 +159,12 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 
 	token, ok := r.MultipartForm.Value["token"]
 	if !ok {
-		dtoRO := RO.Build(0, "使用者Token有誤")
+		dtoRO := RO.Build(0, "使用者令牌有誤")
 		return dtoRO, dtoPR
 	}
 	dtoRO, dtoUsers := users.GetUser(token[0])
 	if dtoRO.Status != 1 {
-		dtoRO := RO.Build(0, "使用者Token有誤")
+		dtoRO := RO.Build(0, "使用者令牌有誤")
 		return dtoRO, dtoPR
 	}
 
