@@ -88,7 +88,7 @@ func (u *Users) Logout(hash string) {
 func (u *Users) CheckLogin(hash string) *dto.ResultObject {
 	data := redis.Get(hash)
 	if data == "" {
-		dtoRO := RO.Build(0, "此帳號已登出")
+		dtoRO := RO.Build(0, "請登入會員")
 		return dtoRO
 	}
 	token := &token{}

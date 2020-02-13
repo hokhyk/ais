@@ -113,7 +113,7 @@ url: http://[Path To]/pr/add
 Content-Type: multipart/form-data
 
 # 參數
-token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&name=[項目]&currency=[幣種]&unit_price=[單價]&quantity=[數量]&exchange_rate=[匯率]&tax=[稅額]&proof=[佐証資料]
+token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&name[]=[項目]&currency[]=[幣種]&unit_price[]=[單價]&quantity[]=[數量]&exchange_rate[]=[匯率]&tax[]=[稅額]&proof[]=[佐証資料]
 
 # 參數說明
 1. 支付對象，廠商與請款人二擇一，勾選廠商需填入廠商名稱

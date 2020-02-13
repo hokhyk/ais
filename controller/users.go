@@ -21,13 +21,6 @@ func (u Users) New() *Users {
 //GetUser 取得使用者
 func (u *Users) GetUser(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
-
-	if token == "" {
-		content := RO.BuildJSON(0, "使用者令牌為空白")
-		fmt.Fprintf(w, content)
-		return
-	}
-
 	dtoRO, dtoUsers := users.GetUser(token)
 	data, _ := json.Marshal(dtoUsers)
 	message := string(data)
@@ -62,13 +55,6 @@ func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
 //CheckLogin 檢查是否處於登入狀態
 func (u *Users) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
-
-	if token == "" {
-		content := RO.BuildJSON(0, "使用者令牌為空白")
-		fmt.Fprintf(w, content)
-		return
-	}
-
 	dtoRO := users.CheckLogin(token)
 	PrintRO(w, dtoRO, "true")
 	return

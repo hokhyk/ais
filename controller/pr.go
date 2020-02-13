@@ -23,18 +23,7 @@ func (pr PR) New() *PR {
 //SetCancel 作廢請購單
 func (pr *PR) SetCancel(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
-	if token == "" {
-		content := RO.BuildJSON(0, "使用者令牌為空白")
-		fmt.Fprintf(w, content)
-		return
-	}
-
 	dtoRO, dtoUsers := users.GetUser(token)
-	if dtoRO.Status != 1 {
-		content := RO.BuildJSON(0, "使用者令牌有誤")
-		fmt.Fprintf(w, content)
-		return
-	}
 
 	id := r.FormValue("id")
 	if id == "" {
@@ -75,32 +64,32 @@ func (pr *PR) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (pr *PR) filterDetail(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dto.PR) {
-	name, ok := r.MultipartForm.Value["name"]
+	name, ok := r.MultipartForm.Value["name[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "項目不得為空")
 		return dtoRO, dtoPR
 	}
-	currency, ok := r.MultipartForm.Value["currency"]
+	currency, ok := r.MultipartForm.Value["currency[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "幣值不得為空")
 		return dtoRO, dtoPR
 	}
-	unitPrice, ok := r.MultipartForm.Value["unit_price"]
+	unitPrice, ok := r.MultipartForm.Value["unit_price[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "單價不得為空")
 		return dtoRO, dtoPR
 	}
-	quantity, ok := r.MultipartForm.Value["quantity"]
+	quantity, ok := r.MultipartForm.Value["quantity[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "數量不得為空")
 		return dtoRO, dtoPR
 	}
-	exchangeRate, ok := r.MultipartForm.Value["exchange_rate"]
+	exchangeRate, ok := r.MultipartForm.Value["exchange_rate[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "匯率不得為空")
 		return dtoRO, dtoPR
 	}
-	tax, ok := r.MultipartForm.Value["tax"]
+	tax, ok := r.MultipartForm.Value["tax[]"]
 	if !ok {
 		dtoRO := RO.Build(0, "稅額不得為空")
 		return dtoRO, dtoPR
@@ -158,15 +147,7 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	r.ParseMultipartForm(128)
 
 	token, ok := r.MultipartForm.Value["token"]
-	if !ok {
-		dtoRO := RO.Build(0, "使用者令牌有誤")
-		return dtoRO, dtoPR
-	}
 	dtoRO, dtoUsers := users.GetUser(token[0])
-	if dtoRO.Status != 1 {
-		dtoRO := RO.Build(0, "使用者令牌有誤")
-		return dtoRO, dtoPR
-	}
 
 	val, ok := r.MultipartForm.Value["sign_at"]
 	if !ok {

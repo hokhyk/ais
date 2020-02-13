@@ -29,11 +29,6 @@ func (d *Download) GetFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.FormValue("token")
-	if token == "" {
-		content := RO.BuildJSON(0, "使用者令牌為空白")
-		fmt.Fprintf(w, content)
-		return
-	}
 
 	fileName := fmt.Sprintf("./resources/proof/%s", proof[0])
 	dtoRO := download.GetFile(token, fileName)
