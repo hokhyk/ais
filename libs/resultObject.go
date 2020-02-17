@@ -19,8 +19,8 @@ func (ro *ResultObject) BuildJSON(status int, message string) string {
 	dtoRO := &dto.ResultObject{}
 	dtoRO.Status = status
 	dtoRO.Message = message
-	json, _ := json.Marshal(dtoRO)
-	content := string(json)
+	jsonByte, _ := json.Marshal(dtoRO)
+	content := string(jsonByte)
 	return content
 }
 

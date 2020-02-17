@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,11 +14,97 @@ import (
 //PR 請購單資料結構
 type PR struct{}
 
+//prListResult 用來存放列表頁資訊
+type prListResult struct {
+	Status int           `json:"status"`
+	User   *dto.Users    `json:"user"`
+	List   *[]dto.PrList `json:"list"`
+}
+
+//prItemResult 用來存放請購單資訊
+type prItemResult struct {
+	Status int             `json:"status"`
+	User   *dto.Users      `json:"user"`
+	List   *dto.PrList     `json:"list"`
+	Detail *[]dto.PrDetail `json:"detail"`
+}
+
 var spr = service.PR{}.New()
 
 //New 建構式
 func (pr PR) New() *PR {
 	return &pr
+}
+
+//GetItem 取得請購單資訊
+func (pr *PR) GetItem(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	_, dtoUsers := users.GetUser(token)
+
+	id := r.FormValue("id")
+
+	if id == "" {
+		content := RO.BuildJSON(0, "請購單號為空白")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	dtoRO, dtoPrList, dtoPrDetail := spr.GetItem(id, dtoUsers)
+
+	if dtoRO.Status != 1 {
+		PrintRO(w, dtoRO, "")
+		return
+	}
+
+	result := &prItemResult{}
+	result.Status = 1
+	result.List = dtoPrList
+	result.Detail = dtoPrDetail
+	result.User = dtoUsers
+
+	jsonByte, _ := json.Marshal(result)
+	content := string(jsonByte)
+	fmt.Fprintf(w, content)
+}
+
+//GetList 取得請購單列表
+func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	_, dtoUsers := users.GetUser(token)
+	dtoPrSearch := &dto.PrSearch{}
+
+	if r.FormValue("begin") != "" {
+		t := r.FormValue("begin") + " 00:00:00"
+		dtoPrSearch.Begin, _ = time.ParseInLocation(TimeFormat, t, time.Local)
+	}
+	if r.FormValue("end") != "" {
+		t := r.FormValue("end") + " 23:59:59"
+		dtoPrSearch.End, _ = time.ParseInLocation(TimeFormat, t, time.Local)
+	}
+	dtoPrSearch.Num = 10
+	if r.FormValue("num") != "" {
+		dtoPrSearch.Num, _ = strconv.Atoi(r.FormValue("num"))
+	}
+	dtoPrSearch.Page = 1
+	if r.FormValue("page") != "" {
+		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
+	}
+
+	dtoRO, dtoPrList := spr.GetList(dtoPrSearch, dtoUsers)
+
+	if dtoRO.Status != 1 {
+		PrintRO(w, dtoRO, "")
+		return
+	}
+
+	result := &prListResult{}
+	result.Status = 1
+	result.User = dtoUsers
+	result.List = dtoPrList
+
+	jsonByte, _ := json.Marshal(result)
+	content := string(jsonByte)
+	fmt.Fprintf(w, content)
 }
 
 //SetCancel 作廢請購單

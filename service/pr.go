@@ -27,6 +27,37 @@ func (pr PR) New() *PR {
 	return &pr
 }
 
+//GetItem 取得請購單資料
+func (pr *PR) GetItem(id string, user *dto.Users) (*dto.ResultObject, *dto.PrList, *[]dto.PrDetail) {
+	mysql := libs.MySQL{}.New()
+	dtoPrList := pr.getHeaderFromDB(id, user, mysql)
+	dtoPrDetail := &[]dto.PrDetail{}
+	if dtoPrList.ID == 0 {
+		dtoRO := RO.Build(0, "查無任何資料")
+		return dtoRO, dtoPrList, dtoPrDetail
+	}
+	dtoPrDetail = pr.getDetailFromDB(dtoPrList, user, mysql)
+	dtoRO := RO.Build(1, "")
+	return dtoRO, dtoPrList, dtoPrDetail
+}
+
+//GetList 取得請購單列表
+func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrList) {
+	mysql := libs.MySQL{}.New()
+	dtoPrList := pr.getListFromDB(search, user, mysql)
+	if len(*dtoPrList) == 0 {
+		dtoRO := RO.Build(0, "查無任何資料")
+		return dtoRO, dtoPrList
+	}
+	for k, v := range *dtoPrList {
+		arr := strings.Split(v.Proof, "/")
+		fileName := arr[len(arr)-1]
+		(*dtoPrList)[k].Proof = "/download/getFile?proof=" + fileName
+	}
+	dtoRO := RO.Build(1, "")
+	return dtoRO, dtoPrList
+}
+
 //SetCancel 作廢請購單
 func (pr *PR) SetCancel(u *dto.Users, id string) *dto.ResultObject {
 	mysql := libs.MySQL{}.New()
@@ -123,6 +154,34 @@ func (pr *PR) doRemoveTempFiles(files []string) {
 	for _, file := range files {
 		os.Remove(file)
 	}
+}
+
+//getDetailFromDB 從資料庫取得請購單單身
+func (pr *PR) getDetailFromDB(list *dto.PrList, user *dto.Users, m MySQL) *[]dto.PrDetail {
+	db := m.GetAdater()
+	dtoPrDetail := &[]dto.PrDetail{}
+	db.Where("pr_list_id = ?", list.ID).Order("id ASC").Find(dtoPrDetail)
+	return dtoPrDetail
+}
+
+//getHeaderFromDB 從資料庫取得請購單單頭
+func (pr *PR) getHeaderFromDB(id string, user *dto.Users, m MySQL) *dto.PrList {
+	db := m.GetAdater()
+	dtoPrList := &dto.PrList{}
+	db.Where("users_id = ? AND status = 1", user.ID).Order("sign_at DESC").Find(dtoPrList)
+	return dtoPrList
+}
+
+//getListFromDB 從資料庫取得請購單列表
+func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrList {
+	db := m.GetAdater()
+	dtoPrList := &[]dto.PrList{}
+	if !search.Begin.IsZero() && !search.End.IsZero() {
+		db = db.Where("sign_at >= ? AND sign_at <= ?", search.Begin, search.End)
+	}
+	offset := (search.Page - 1) * search.Num
+	db.Where("users_id = ? AND status = 1", user.ID).Offset(offset).Limit(search.Num).Order("sign_at DESC").Find(dtoPrList)
+	return dtoPrList
 }
 
 //doSetCancelToDB 將作廢資訊寫入資料蟀

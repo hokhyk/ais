@@ -36,6 +36,7 @@ func (d *Download) checkFile(u *dto.Users, fileName string, m MySQL) *dto.Result
 	usersID := strconv.Itoa(u.ID)
 	dtoPrList := &dto.PrList{}
 	skiper := []string{"1", "12", "50"}
+	db = db.Where("status = 1")
 	if helper.InArray(skiper, usersID) {
 		db.Where("proof = ?", fileName).Find(dtoPrList)
 	} else {

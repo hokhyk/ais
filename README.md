@@ -41,7 +41,7 @@ salt=[鹽值，供SHA256加密用]
 1. 管理員檢閱當月請款/請購細項
 
 ## API
-只要回傳的 code 不是 200 ，通通都是有問題， message 會說明是什麼原因
+只要回傳的 status 不是 1 ，通通都是有問題， message 會說明是什麼原因
 
 登入
 ```
@@ -54,7 +54,7 @@ password=[HRM使用者密碼]
 
 # 回傳 
 {
-    code: 1
+    status: 1
     message: [令牌]
 }
 ```
@@ -69,7 +69,7 @@ token=[令牌]
 
 # 回傳
 {
-    code: 1
+    status: 1
     message: "true"
 }
 ```
@@ -84,7 +84,7 @@ token=[令牌]
 
 # 回傳
 {
-    code: 1
+    status: 1
     message: "true"
 }
 ```
@@ -99,7 +99,7 @@ token=[令牌]
 
 # 回傳
 {
-    code: 1
+    status: 1
     message: [使用者資訊JSON]
 }
 ```
@@ -133,7 +133,7 @@ token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳
 
 # 回傳
 {
-    code: 1
+    status: 1
     message: "true"
 }
 ```
@@ -148,8 +148,113 @@ token=[令牌]&id=[請購單號]
 
 # 回傳
 {
-    code: 1
+    status: 1
     message: "true"
+}
+```
+
+取得請購單列表
+```
+# HTTP POST
+url: http://[Path To]/pr/getList
+
+# 參數
+token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]
+
+# 參數說明
+1. 第..頁，可不給，預設從第1頁開始
+2. 每頁筆數，可不給，預設一頁十筆
+3. 起始日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+4. 結束日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+
+# 回傳
+{
+    status: 1
+    user: {
+        id: [ID],
+        firstname: [名字],
+        lastname: [姓名],
+        login: [HRM 帳號],
+        email: [員工信箱],
+        role: [角色],
+        manager: [上級主管ID],
+        country: [國家],
+        organization_id: [部門ID],
+        organization_name: [部門名稱],
+        contract: [類別],
+        position: [職稱],
+        identifier: [員工編號]
+    },
+    list: [{
+        id: [ID],
+        organization_id: [部門ID],
+        pay_to: [支付對象],
+        vendor_name: [廠商名稱],
+        pay_type: [入帳類別],
+        list_type: [類別],
+        users_id: [員工ID],
+        pay_method: [支付方式],
+        bank_account: [銀行帳號],
+        proof: [佐証資料],
+        status: [請購單狀態],
+        sign_at: [簽單日期],
+        create_at: [新增日期]
+    },{...}]
+}
+```
+
+取得請購單資訊
+```
+# HTTP POST
+url: http://[Path To]/pr/getItem
+
+# 參數
+token=[令牌]&id=[請購單ID]
+
+# 回傳
+{
+    status: 1
+    user: {
+        id: [ID],
+        firstname: [名字],
+        lastname: [姓名],
+        login: [HRM 帳號],
+        email: [員工信箱],
+        role: [角色],
+        manager: [上級主管ID],
+        country: [國家],
+        organization_id: [部門ID],
+        organization_name: [部門名稱],
+        contract: [類別],
+        position: [職稱],
+        identifier: [員工編號]
+    },
+    list: {
+        id: [ID],
+        organization_id: [部門ID],
+        pay_to: [支付對象],
+        vendor_name: [廠商名稱],
+        pay_type: [入帳類別],
+        list_type: [類別],
+        users_id: [員工ID],
+        pay_method: [支付方式],
+        bank_account: [銀行帳號],
+        proof: [佐証資料],
+        status: [請購單狀態],
+        sign_at: [簽單日期],
+        create_at: [新增日期]
+    },
+    detail: [{
+        id: [ID],
+        name: [名稱],
+        pr_list_id: [請購單ID],
+        currency: [幣別],
+        unit_price: [單價],
+        quantity: [數量],
+        exchange_rate: [匯率],
+        tax: [稅額],
+        total_price: [總價]
+    }, {...}]
 }
 ```
 

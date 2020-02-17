@@ -37,3 +37,11 @@ type PrDetail struct {
 	Tax          float32 `json:"tax"`
 	TotalPrice   float32 `json:"total_price"`
 }
+
+//PrSearch 搜尋條件
+type PrSearch struct {
+	Begin time.Time `json:"begin"`
+	End   time.Time `json:"end"`
+	Num   int       `json:"num"`
+	Page  int       `json:"page"`
+}

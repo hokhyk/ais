@@ -89,7 +89,11 @@ func main() {
 	http.Handle("/pr/add", middleware(handler, []string{"POST"}, 1))
 	handler = http.HandlerFunc(pr.SetCancel)
 	http.Handle("/pr/setCancel", middleware(handler, []string{"POST"}, 1))
+	handler = http.HandlerFunc(pr.GetList)
+	http.Handle("/pr/getList", middleware(handler, []string{"POST"}, 1))
+	handler = http.HandlerFunc(pr.GetItem)
+	http.Handle("/pr/getItem", middleware(handler, []string{"POST"}, 1))
 	handler = http.HandlerFunc(download.GetFile)
-	http.Handle("/download/getFile", middleware(handler, []string{"GET", "POST"}, 1))
+	http.Handle("/download/getFile", middleware(handler, []string{"POST"}, 1))
 	http.ListenAndServe(port, nil)
 }
