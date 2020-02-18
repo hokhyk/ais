@@ -28,34 +28,34 @@ func (pr PR) New() *PR {
 }
 
 //GetItem 取得請購單資料
-func (pr *PR) GetItem(id string, user *dto.Users) (*dto.ResultObject, *dto.PrList, *[]dto.PrDetail) {
+func (pr *PR) GetItem(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *dto.PrListResult, *[]dto.PrDetail) {
 	mysql := libs.MySQL{}.New()
-	dtoPrList := pr.getHeaderFromDB(id, user, mysql)
+	search.Page = 1
+	search.Num = 1
+	dtoPrListResults := pr.getListFromDB(search, user, mysql)
 	dtoPrDetail := &[]dto.PrDetail{}
-	if dtoPrList.ID == 0 {
+	if len(*dtoPrListResults) == 0 {
 		dtoRO := RO.Build(0, "查無任何資料")
-		return dtoRO, dtoPrList, dtoPrDetail
+		return dtoRO, &dto.PrListResult{}, dtoPrDetail
 	}
-	dtoPrDetail = pr.getDetailFromDB(dtoPrList, user, mysql)
+	dtoPrListResults = pr.setProofURL(dtoPrListResults)
+	dtoPrListResult := &(*dtoPrListResults)[0]
+	dtoPrDetail = pr.getDetailFromDB(dtoPrListResult, mysql)
 	dtoRO := RO.Build(1, "")
-	return dtoRO, dtoPrList, dtoPrDetail
+	return dtoRO, dtoPrListResult, dtoPrDetail
 }
 
 //GetList 取得請購單列表
-func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrList) {
+func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrListResult) {
 	mysql := libs.MySQL{}.New()
-	dtoPrList := pr.getListFromDB(search, user, mysql)
-	if len(*dtoPrList) == 0 {
+	dtoPrListResults := pr.getListFromDB(search, user, mysql)
+	if len(*dtoPrListResults) == 0 {
 		dtoRO := RO.Build(0, "查無任何資料")
-		return dtoRO, dtoPrList
+		return dtoRO, dtoPrListResults
 	}
-	for k, v := range *dtoPrList {
-		arr := strings.Split(v.Proof, "/")
-		fileName := arr[len(arr)-1]
-		(*dtoPrList)[k].Proof = "/download/getFile?proof=" + fileName
-	}
+	dtoPrListResults = pr.setProofURL(dtoPrListResults)
 	dtoRO := RO.Build(1, "")
-	return dtoRO, dtoPrList
+	return dtoRO, dtoPrListResults
 }
 
 //SetCancel 作廢請購單
@@ -156,32 +156,75 @@ func (pr *PR) doRemoveTempFiles(files []string) {
 	}
 }
 
+//setProofURL 將佐証資資路徑轉成相對路徑
+func (pr *PR) setProofURL(results *[]dto.PrListResult) *[]dto.PrListResult {
+	for k, v := range *results {
+		arr := strings.Split(v.Proof, "/")
+		fileName := arr[len(arr)-1]
+		(*results)[k].Proof = "/download/getFile?proof=" + fileName
+	}
+	return results
+}
+
 //getDetailFromDB 從資料庫取得請購單單身
-func (pr *PR) getDetailFromDB(list *dto.PrList, user *dto.Users, m MySQL) *[]dto.PrDetail {
+func (pr *PR) getDetailFromDB(list *dto.PrListResult, m MySQL) *[]dto.PrDetail {
 	db := m.GetAdater()
 	dtoPrDetail := &[]dto.PrDetail{}
 	db.Where("pr_list_id = ?", list.ID).Order("id ASC").Find(dtoPrDetail)
 	return dtoPrDetail
 }
 
-//getHeaderFromDB 從資料庫取得請購單單頭
-func (pr *PR) getHeaderFromDB(id string, user *dto.Users, m MySQL) *dto.PrList {
+///getListFromDB 從資料庫取得請購單列表
+func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrListResult {
 	db := m.GetAdater()
-	dtoPrList := &dto.PrList{}
-	db.Where("users_id = ? AND status = 1", user.ID).Order("sign_at DESC").Find(dtoPrList)
-	return dtoPrList
-}
-
-//getListFromDB 從資料庫取得請購單列表
-func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrList {
-	db := m.GetAdater()
-	dtoPrList := &[]dto.PrList{}
+	sql := `
+		SELECT 
+			pl.id, 
+			pl.organization_id, 
+			o.name AS organization_name, 
+			pl.pay_to, 
+			pl.vendor_name, 
+			pl.pay_type, 
+			pl.list_type, 
+			pl.users_id, 
+			u.email, 
+			u.identifier, 
+			u.lastname, 
+			u.firstname, 
+			pl.pay_method, 
+			pl.bank_account, 
+			pl.proof, 
+			pl.status, 
+			pl.sign_at, 
+			pl.create_at
+		FROM 
+			pr_lists pl
+		INNER JOIN 
+			users u ON pl.users_id = u.id
+		INNER JOIN
+			organization o ON pl.organization_id = o.id
+		WHERE
+			pl.status = 1 %s
+		ORDER BY
+			pl.sign_at DESC
+		LIMIT %d, %d
+	`
+	where := fmt.Sprintf(" AND pl.users_id = %d", user.ID)
 	if !search.Begin.IsZero() && !search.End.IsZero() {
-		db = db.Where("sign_at >= ? AND sign_at <= ?", search.Begin, search.End)
+		where = where + " %s"
+		begin := search.Begin.Format(TimeFormat)
+		end := search.End.Format(TimeFormat)
+		where = fmt.Sprintf(" AND pl.sign_at >= '%s' AND pl.sign_at <= '%s'", begin, end)
+	}
+	if search.ID != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.id = %d", search.ID)
 	}
 	offset := (search.Page - 1) * search.Num
-	db.Where("users_id = ? AND status = 1", user.ID).Offset(offset).Limit(search.Num).Order("sign_at DESC").Find(dtoPrList)
-	return dtoPrList
+	sql = fmt.Sprintf(sql, where, offset, search.Num)
+	PrListResults := &[]dto.PrListResult{}
+	db.Raw(sql).Scan(PrListResults)
+	return PrListResults
 }
 
 //doSetCancelToDB 將作廢資訊寫入資料蟀

@@ -17,6 +17,7 @@ var ro = libs.ResultObject{}.New()
 
 var user = controller.Users{}.New()
 var pr = controller.PR{}.New()
+var admin = controller.Admin{}.New()
 var download = controller.Download{}.New()
 
 var suser = service.Users{}.New()
@@ -93,6 +94,10 @@ func main() {
 	http.Handle("/pr/getList", middleware(handler, []string{"POST"}, 1))
 	handler = http.HandlerFunc(pr.GetItem)
 	http.Handle("/pr/getItem", middleware(handler, []string{"POST"}, 1))
+	handler = http.HandlerFunc(admin.GetList)
+	http.Handle("/admin/getList", middleware(handler, []string{"POST"}, 1))
+	handler = http.HandlerFunc(admin.GetItem)
+	http.Handle("/admin/getItem", middleware(handler, []string{"POST"}, 1))
 	handler = http.HandlerFunc(download.GetFile)
 	http.Handle("/download/getFile", middleware(handler, []string{"POST"}, 1))
 	http.ListenAndServe(port, nil)

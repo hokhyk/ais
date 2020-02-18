@@ -169,30 +169,20 @@ token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結�
 
 # 回傳
 {
-    status: 1
-    user: {
-        id: [ID],
-        firstname: [名字],
-        lastname: [姓名],
-        login: [HRM 帳號],
-        email: [員工信箱],
-        role: [角色],
-        manager: [上級主管ID],
-        country: [國家],
-        organization_id: [部門ID],
-        organization_name: [部門名稱],
-        contract: [類別],
-        position: [職稱],
-        identifier: [員工編號]
-    },
+    status: 1,
     list: [{
         id: [ID],
         organization_id: [部門ID],
+        organization_name: [部門名稱],
         pay_to: [支付對象],
         vendor_name: [廠商名稱],
         pay_type: [入帳類別],
         list_type: [類別],
         users_id: [員工ID],
+        email: [員工信箱],
+        identifier: [員工編號],
+        lastname: [姓名],
+        firstname: [名字],
         pay_method: [支付方式],
         bank_account: [銀行帳號],
         proof: [佐証資料],
@@ -214,29 +204,104 @@ token=[令牌]&id=[請購單ID]
 # 回傳
 {
     status: 1
-    user: {
-        id: [ID],
-        firstname: [名字],
-        lastname: [姓名],
-        login: [HRM 帳號],
-        email: [員工信箱],
-        role: [角色],
-        manager: [上級主管ID],
-        country: [國家],
-        organization_id: [部門ID],
-        organization_name: [部門名稱],
-        contract: [類別],
-        position: [職稱],
-        identifier: [員工編號]
-    },
     list: {
         id: [ID],
         organization_id: [部門ID],
+        organization_name: [部門名稱],
         pay_to: [支付對象],
         vendor_name: [廠商名稱],
         pay_type: [入帳類別],
         list_type: [類別],
         users_id: [員工ID],
+        email: [員工信箱],
+        identifier: [員工編號],
+        lastname: [姓名],
+        firstname: [名字],
+        pay_method: [支付方式],
+        bank_account: [銀行帳號],
+        proof: [佐証資料],
+        status: [請購單狀態],
+        sign_at: [簽單日期],
+        create_at: [新增日期]
+    },
+    detail: [{
+        id: [ID],
+        name: [名稱],
+        pr_list_id: [請購單ID],
+        currency: [幣別],
+        unit_price: [單價],
+        quantity: [數量],
+        exchange_rate: [匯率],
+        tax: [稅額],
+        total_price: [總價]
+    }, {...}]
+}
+```
+
+管理員-取得請購單列表
+```
+# HTTP POST
+url: http://[Path To]/pr/getList
+
+# 參數
+token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]
+
+# 參數說明
+1. 第..頁，可不給，預設從第1頁開始
+2. 每頁筆數，可不給，預設一頁十筆
+3. 起始日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+4. 結束日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+
+# 回傳
+{
+    status: 1,
+    list: [{
+        id: [ID],
+        organization_id: [部門ID],
+        organization_name: [部門名稱],
+        pay_to: [支付對象],
+        vendor_name: [廠商名稱],
+        pay_type: [入帳類別],
+        list_type: [類別],
+        users_id: [員工ID],
+        email: [員工信箱],
+        identifier: [員工編號],
+        lastname: [姓名],
+        firstname: [名字],
+        pay_method: [支付方式],
+        bank_account: [銀行帳號],
+        proof: [佐証資料],
+        status: [請購單狀態],
+        sign_at: [簽單日期],
+        create_at: [新增日期]
+    },{...}]
+}
+```
+
+管理員-取得請購單資訊
+```
+# HTTP POST
+url: http://[Path To]/pr/getItem
+
+# 參數
+token=[令牌]&id=[請購單ID]
+
+# 回傳
+{
+    status: 1
+    list: {
+        id: [ID],
+        organization_id: [部門ID],
+        organization_name: [部門名稱],
+        pay_to: [支付對象],
+        vendor_name: [廠商名稱],
+        pay_type: [入帳類別],
+        list_type: [類別],
+        users_id: [員工ID],
+        email: [員工信箱],
+        identifier: [員工編號],
+        lastname: [姓名],
+        firstname: [名字],
         pay_method: [支付方式],
         bank_account: [銀行帳號],
         proof: [佐証資料],

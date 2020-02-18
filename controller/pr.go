@@ -16,17 +16,16 @@ type PR struct{}
 
 //prListResult 用來存放列表頁資訊
 type prListResult struct {
-	Status int           `json:"status"`
-	User   *dto.Users    `json:"user"`
-	List   *[]dto.PrList `json:"list"`
+	Status int                 `json:"status"`
+	User   *dto.Users          `json:"user"`
+	List   *[]dto.PrListResult `json:"list"`
 }
 
 //prItemResult 用來存放請購單資訊
 type prItemResult struct {
-	Status int             `json:"status"`
-	User   *dto.Users      `json:"user"`
-	List   *dto.PrList     `json:"list"`
-	Detail *[]dto.PrDetail `json:"detail"`
+	Status int               `json:"status"`
+	List   *dto.PrListResult `json:"list"`
+	Detail *[]dto.PrDetail   `json:"detail"`
 }
 
 var spr = service.PR{}.New()
@@ -41,15 +40,23 @@ func (pr *PR) GetItem(w http.ResponseWriter, r *http.Request) {
 	token := r.FormValue("token")
 	_, dtoUsers := users.GetUser(token)
 
-	id := r.FormValue("id")
-
-	if id == "" {
+	val := r.FormValue("id")
+	if val == "" {
 		content := RO.BuildJSON(0, "請購單號為空白")
 		fmt.Fprintf(w, content)
 		return
 	}
 
-	dtoRO, dtoPrList, dtoPrDetail := spr.GetItem(id, dtoUsers)
+	id, err := strconv.Atoi(val)
+	if err != nil {
+		content := RO.BuildJSON(0, "請購單號需為數字")
+		fmt.Fprintf(w, content)
+		return
+	}
+
+	dtoSearch := &dto.PrSearch{}
+	dtoSearch.ID = id
+	dtoRO, dtoPrList, dtoPrDetail := spr.GetItem(dtoSearch, dtoUsers)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
@@ -60,7 +67,6 @@ func (pr *PR) GetItem(w http.ResponseWriter, r *http.Request) {
 	result.Status = 1
 	result.List = dtoPrList
 	result.Detail = dtoPrDetail
-	result.User = dtoUsers
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)
@@ -90,7 +96,7 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
 	}
 
-	dtoRO, dtoPrList := spr.GetList(dtoPrSearch, dtoUsers)
+	dtoRO, dtoPrListResult := spr.GetList(dtoPrSearch, dtoUsers)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
@@ -99,8 +105,7 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 
 	result := &prListResult{}
 	result.Status = 1
-	result.User = dtoUsers
-	result.List = dtoPrList
+	result.List = dtoPrListResult
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)
