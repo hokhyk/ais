@@ -17,7 +17,6 @@ type PR struct{}
 //prListResult 用來存放列表頁資訊
 type prListResult struct {
 	Status int                 `json:"status"`
-	User   *dto.Users          `json:"user"`
 	List   *[]dto.PrListResult `json:"list"`
 }
 
