@@ -172,23 +172,14 @@ token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結�
     status: 1,
     list: [{
         id: [ID],
-        organization_id: [部門ID],
-        organization_name: [部門名稱],
-        pay_to: [支付對象],
-        vendor_name: [廠商名稱],
-        pay_type: [入帳類別],
-        list_type: [類別],
-        users_id: [員工ID],
-        email: [員工信箱],
-        identifier: [員工編號],
-        lastname: [姓名],
-        firstname: [名字],
-        pay_method: [支付方式],
-        bank_account: [銀行帳號],
-        proof: [佐証資料],
-        status: [請購單狀態],
-        sign_at: [簽單日期],
-        create_at: [新增日期]
+        name: [名稱],
+        pr_list_id: [請購單ID],
+        currency: [幣別],
+        unit_price: [單價],
+        quantity: [數量],
+        exchange_rate: [匯率],
+        tax: [稅額],
+        total_price: [總價]
     },{...}]
 }
 ```
@@ -257,23 +248,14 @@ token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結�
     status: 1,
     list: [{
         id: [ID],
-        organization_id: [部門ID],
-        organization_name: [部門名稱],
-        pay_to: [支付對象],
-        vendor_name: [廠商名稱],
-        pay_type: [入帳類別],
-        list_type: [類別],
-        users_id: [員工ID],
-        email: [員工信箱],
-        identifier: [員工編號],
-        lastname: [姓名],
-        firstname: [名字],
-        pay_method: [支付方式],
-        bank_account: [銀行帳號],
-        proof: [佐証資料],
-        status: [請購單狀態],
-        sign_at: [簽單日期],
-        create_at: [新增日期]
+        name: [名稱],
+        pr_list_id: [請購單ID],
+        currency: [幣別],
+        unit_price: [單價],
+        quantity: [數量],
+        exchange_rate: [匯率],
+        tax: [稅額],
+        total_price: [總價]
     },{...}]
 }
 ```

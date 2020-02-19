@@ -32,7 +32,7 @@ func (pr *PR) GetItem(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject,
 	mysql := libs.MySQL{}.New()
 	search.Page = 1
 	search.Num = 1
-	dtoPrListResults := pr.getListFromDB(search, user, mysql)
+	dtoPrListResults := pr.getHeaderFromDB(search, user, mysql)
 	dtoPrDetail := &[]dto.PrDetail{}
 	if len(*dtoPrListResults) == 0 {
 		dtoRO := RO.Build(0, "查無任何資料")
@@ -46,16 +46,15 @@ func (pr *PR) GetItem(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject,
 }
 
 //GetList 取得請購單列表
-func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrListResult) {
+func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrDetail) {
 	mysql := libs.MySQL{}.New()
-	dtoPrListResults := pr.getListFromDB(search, user, mysql)
-	if len(*dtoPrListResults) == 0 {
+	dtoPrDetails := pr.getListFromDB(search, user, mysql)
+	if len(*dtoPrDetails) == 0 {
 		dtoRO := RO.Build(0, "查無任何資料")
-		return dtoRO, dtoPrListResults
+		return dtoRO, dtoPrDetails
 	}
-	dtoPrListResults = pr.setProofURL(dtoPrListResults)
 	dtoRO := RO.Build(1, "")
-	return dtoRO, dtoPrListResults
+	return dtoRO, dtoPrDetails
 }
 
 //SetCancel 作廢請購單
@@ -166,16 +165,8 @@ func (pr *PR) setProofURL(results *[]dto.PrListResult) *[]dto.PrListResult {
 	return results
 }
 
-//getDetailFromDB 從資料庫取得請購單單身
-func (pr *PR) getDetailFromDB(list *dto.PrListResult, m MySQL) *[]dto.PrDetail {
-	db := m.GetAdater()
-	dtoPrDetail := &[]dto.PrDetail{}
-	db.Where("pr_list_id = ?", list.ID).Order("id ASC").Find(dtoPrDetail)
-	return dtoPrDetail
-}
-
-///getListFromDB 從資料庫取得請購單列表
-func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrListResult {
+//getHeaderFromDB 從資料庫取得請購單單頭
+func (pr *PR) getHeaderFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrListResult {
 	db := m.GetAdater()
 	sql := `
 		SELECT 
@@ -209,7 +200,11 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 			pl.sign_at DESC
 		LIMIT %d, %d
 	`
-	where := fmt.Sprintf(" AND pl.users_id = %d", user.ID)
+	where := ""
+	if user.ID != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.users_id = %d", user.ID)
+	}
 	if !search.Begin.IsZero() && !search.End.IsZero() {
 		where = where + " %s"
 		begin := search.Begin.Format(TimeFormat)
@@ -222,9 +217,67 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 	}
 	offset := (search.Page - 1) * search.Num
 	sql = fmt.Sprintf(sql, where, offset, search.Num)
-	PrListResults := &[]dto.PrListResult{}
-	db.Raw(sql).Scan(PrListResults)
-	return PrListResults
+	dtoPrListResults := &[]dto.PrListResult{}
+	db.Raw(sql).Scan(dtoPrListResults)
+	return dtoPrListResults
+}
+
+//getDetailFromDB 從資料庫取得請購單單身
+func (pr *PR) getDetailFromDB(list *dto.PrListResult, m MySQL) *[]dto.PrDetail {
+	db := m.GetAdater()
+	dtoPrDetail := &[]dto.PrDetail{}
+	db.Where("pr_list_id = ?", list.ID).Order("id ASC").Find(dtoPrDetail)
+	return dtoPrDetail
+}
+
+//getListFromDB 從資料庫取得請購單列表
+func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrDetail {
+	db := m.GetAdater()
+	sql := `
+		SELECT 
+			pd.id,
+			pd.pr_list_id,
+			pd.name,
+			pd.currency,
+			pd.unit_price,
+			pd.quantity,
+			pd.exchange_rate,
+			pd.tax,
+			pd.total_price
+		FROM 
+			pr_lists pl
+		INNER JOIN 
+			users u ON pl.users_id = u.id
+		INNER JOIN
+			organization o ON pl.organization_id = o.id
+		INNER JOIN
+			pr_details pd ON pd.pr_list_id = pl.id
+		WHERE
+			pl.status = 1 %s
+		ORDER BY
+			pl.sign_at DESC
+		LIMIT %d, %d
+	`
+	where := ""
+	if user.ID != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.users_id = %d", user.ID)
+	}
+	if !search.Begin.IsZero() && !search.End.IsZero() {
+		where = where + " %s"
+		begin := search.Begin.Format(TimeFormat)
+		end := search.End.Format(TimeFormat)
+		where = fmt.Sprintf(" AND pl.sign_at >= '%s' AND pl.sign_at <= '%s'", begin, end)
+	}
+	if search.ID != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.id = %d", search.ID)
+	}
+	offset := (search.Page - 1) * search.Num
+	sql = fmt.Sprintf(sql, where, offset, search.Num)
+	dtoPrDetails := &[]dto.PrDetail{}
+	db.Raw(sql).Scan(dtoPrDetails)
+	return dtoPrDetails
 }
 
 //doSetCancelToDB 將作廢資訊寫入資料蟀

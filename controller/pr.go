@@ -16,8 +16,8 @@ type PR struct{}
 
 //prListResult 用來存放列表頁資訊
 type prListResult struct {
-	Status int                 `json:"status"`
-	List   *[]dto.PrListResult `json:"list"`
+	Status int             `json:"status"`
+	List   *[]dto.PrDetail `json:"list"`
 }
 
 //prItemResult 用來存放請購單資訊
@@ -95,7 +95,7 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
 	}
 
-	dtoRO, dtoPrListResult := spr.GetList(dtoPrSearch, dtoUsers)
+	dtoRO, dtoPrDetails := spr.GetList(dtoPrSearch, dtoUsers)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
@@ -104,7 +104,7 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 
 	result := &prListResult{}
 	result.Status = 1
-	result.List = dtoPrListResult
+	result.List = dtoPrDetails
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)

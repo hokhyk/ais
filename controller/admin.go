@@ -17,8 +17,8 @@ type Admin struct{}
 
 //adminPrListResult 用來存放列表頁資訊
 type adminPrListResult struct {
-	Status int                 `json:"status"`
-	List   *[]dto.PrListResult `json:"list"`
+	Status int             `json:"status"`
+	List   *[]dto.PrDetail `json:"list"`
 }
 
 //adminPrItemResult 用來存放請購單資訊
@@ -109,7 +109,7 @@ func (a *Admin) GetList(w http.ResponseWriter, r *http.Request) {
 		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
 	}
 
-	dtoRO, dtoPrListResults := sa.GetList(dtoPrSearch)
+	dtoRO, dtoPrDetails := sa.GetList(dtoPrSearch)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
@@ -118,7 +118,7 @@ func (a *Admin) GetList(w http.ResponseWriter, r *http.Request) {
 
 	result := &adminPrListResult{}
 	result.Status = 1
-	result.List = dtoPrListResults
+	result.List = dtoPrDetails
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)
