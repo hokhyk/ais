@@ -247,11 +247,19 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	}
 	signAt := fmt.Sprintf("%s 00:00:00", val[0])
 
+	val, ok = r.MultipartForm.Value["pay_date"]
+	payDate := "0001/01/01 00:00:00"
+	if ok {
+		payDate = fmt.Sprintf("%s 00:00:00", val[0])
+	}
+
 	now := time.Now()
 
 	dtoPR.List.OrganizationID = dtoUsers.OrganizationID
 	dtoPR.List.UsersID = dtoUsers.ID
 	dtoPR.List.SignAt, _ = time.ParseInLocation(TimeFormat, signAt, time.Local)
+	dtoPR.List.PayDate, _ = time.ParseInLocation(TimeFormat, payDate, time.Local)
+
 	dtoPR.List.CreateAt, _ = time.ParseInLocation(TimeFormat, now.Format(TimeFormat), time.Local)
 	dtoPR.List.Status = 1
 

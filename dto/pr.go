@@ -22,6 +22,7 @@ type PrList struct {
 	Proof          string    `json:"proof"`
 	Status         int       `json:"status"`
 	SignAt         time.Time `json:"sign_at"`
+	PayDate        time.Time `json:"pay_date"`
 	CreateAt       time.Time `json:"create_at"`
 }
 
@@ -66,5 +67,6 @@ type PrListResult struct {
 	Proof            string    `json:"proof"`
 	Status           int       `json:"status"`
 	SignAt           time.Time `json:"sign_at"`
+	PayDate          time.Time `json:"pay_date"`
 	CreateAt         time.Time `json:"create_at"`
 }

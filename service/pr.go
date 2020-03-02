@@ -187,6 +187,7 @@ func (pr *PR) getHeaderFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[
 			pl.proof, 
 			pl.status, 
 			pl.sign_at, 
+			pl.pay_date,
 			pl.create_at
 		FROM 
 			pr_lists pl
@@ -235,25 +236,28 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 	db := m.GetAdater()
 	sql := `
 		SELECT 
-			pd.id,
-			pd.pr_list_id,
-			pd.name,
-			pd.currency,
-			pd.unit_price,
-			pd.quantity,
-			pd.exchange_rate,
-			pd.tax,
-			pd.total_price
+			pd.* 
 		FROM 
-			pr_lists pl
+			pr_details pd 
 		INNER JOIN 
-			users u ON pl.users_id = u.id
-		INNER JOIN
-			organization o ON pl.organization_id = o.id
-		INNER JOIN
-			pr_details pd ON pd.pr_list_id = pl.id
-		WHERE
-			pl.status = 1 %s
+			pr_lists pl ON pl.id = pd.pr_list_id
+		WHERE 
+			pd.id IN (
+				SELECT 
+					MIN(pd.id)
+				FROM 
+					pr_lists pl
+				INNER JOIN
+					pr_details pd ON pl.id = pd.pr_list_id
+				INNER JOIN 
+					users u ON pl.users_id = u.id
+				INNER JOIN
+					organization o ON pl.organization_id = o.id
+				WHERE
+					pl.status = 1 %s
+				GROUP BY
+					pd.pr_list_id
+			)
 		ORDER BY
 			pl.sign_at DESC
 		LIMIT %d, %d
