@@ -15,12 +15,6 @@ import (
 //Admin 管理員頁面資料結構
 type Admin struct{}
 
-//adminPrListResult 用來存放列表頁資訊
-type adminPrListResult struct {
-	Status int             `json:"status"`
-	List   *[]dto.PrDetail `json:"list"`
-}
-
 //adminPrItemResult 用來存放請購單資訊
 type adminPrItemResult struct {
 	Status int               `json:"status"`
@@ -109,16 +103,16 @@ func (a *Admin) GetList(w http.ResponseWriter, r *http.Request) {
 		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
 	}
 
-	dtoRO, dtoPrDetails := sa.GetList(dtoPrSearch)
+	dtoRO, dtoGetList := sa.GetList(dtoPrSearch)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
 		return
 	}
 
-	result := &adminPrListResult{}
+	result := &getListResult{}
 	result.Status = 1
-	result.List = dtoPrDetails
+	result.List = dtoGetList
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)

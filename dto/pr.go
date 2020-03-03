@@ -39,6 +39,20 @@ type PrDetail struct {
 	TotalPrice   float32 `json:"total_price"`
 }
 
+//GetList 取得請購單列表
+type GetList struct {
+	ID           int     `json:"id" gorm:"primary_key:yes"`
+	Name         string  `json:"name"`
+	PRListID     int     `json:"pr_list_id"`
+	Currency     string  `json:"currency"`
+	UnitPrice    float32 `json:"unit_price"`
+	Quantity     int     `json:"quantity"`
+	ExchangeRate float32 `json:"exchange_rate"`
+	Tax          float32 `json:"tax"`
+	TotalPrice   float32 `json:"total_price"`
+	Proof        string  `json:"proof"`
+}
+
 //PrSearch 搜尋條件
 type PrSearch struct {
 	ID    int       `json:"id"`

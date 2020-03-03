@@ -14,10 +14,10 @@ import (
 //PR 請購單資料結構
 type PR struct{}
 
-//prListResult 用來存放列表頁資訊
-type prListResult struct {
-	Status int             `json:"status"`
-	List   *[]dto.PrDetail `json:"list"`
+//getListResult 用來存放列表頁資訊
+type getListResult struct {
+	Status int            `json:"status"`
+	List   *[]dto.GetList `json:"list"`
 }
 
 //prItemResult 用來存放請購單資訊
@@ -95,16 +95,16 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
 	}
 
-	dtoRO, dtoPrDetails := spr.GetList(dtoPrSearch, dtoUsers)
+	dtoRO, dtoGetList := spr.GetList(dtoPrSearch, dtoUsers)
 
 	if dtoRO.Status != 1 {
 		PrintRO(w, dtoRO, "")
 		return
 	}
 
-	result := &prListResult{}
+	result := &getListResult{}
 	result.Status = 1
-	result.List = dtoPrDetails
+	result.List = dtoGetList
 
 	jsonByte, _ := json.Marshal(result)
 	content := string(jsonByte)

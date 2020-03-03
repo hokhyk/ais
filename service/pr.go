@@ -46,15 +46,15 @@ func (pr *PR) GetItem(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject,
 }
 
 //GetList 取得請購單列表
-func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.PrDetail) {
+func (pr *PR) GetList(search *dto.PrSearch, user *dto.Users) (*dto.ResultObject, *[]dto.GetList) {
 	mysql := libs.MySQL{}.New()
-	dtoPrDetails := pr.getListFromDB(search, user, mysql)
-	if len(*dtoPrDetails) == 0 {
+	dtoGetList := pr.getListFromDB(search, user, mysql)
+	if len(*dtoGetList) == 0 {
 		dtoRO := RO.Build(0, "查無任何資料")
-		return dtoRO, dtoPrDetails
+		return dtoRO, dtoGetList
 	}
 	dtoRO := RO.Build(1, "")
-	return dtoRO, dtoPrDetails
+	return dtoRO, dtoGetList
 }
 
 //SetCancel 作廢請購單
@@ -232,11 +232,12 @@ func (pr *PR) getDetailFromDB(list *dto.PrListResult, m MySQL) *[]dto.PrDetail {
 }
 
 //getListFromDB 從資料庫取得請購單列表
-func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrDetail {
+func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.GetList {
 	db := m.GetAdater()
 	sql := `
 		SELECT 
-			pd.* 
+			pd.*,
+			pl.proof
 		FROM 
 			pr_details pd 
 		INNER JOIN 
@@ -279,9 +280,9 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 	}
 	offset := (search.Page - 1) * search.Num
 	sql = fmt.Sprintf(sql, where, offset, search.Num)
-	dtoPrDetails := &[]dto.PrDetail{}
-	db.Raw(sql).Scan(dtoPrDetails)
-	return dtoPrDetails
+	dtoGetList := &[]dto.GetList{}
+	db.Raw(sql).Scan(dtoGetList)
+	return dtoGetList
 }
 
 //doSetCancelToDB 將作廢資訊寫入資料蟀

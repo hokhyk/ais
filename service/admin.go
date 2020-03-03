@@ -20,7 +20,7 @@ func (a *Admin) GetItem(search *dto.PrSearch) (*dto.ResultObject, *dto.PrListRes
 }
 
 //GetList 取得請購單列表
-func (a *Admin) GetList(search *dto.PrSearch) (*dto.ResultObject, *[]dto.PrDetail) {
+func (a *Admin) GetList(search *dto.PrSearch) (*dto.ResultObject, *[]dto.GetList) {
 	user := &dto.Users{}
 	pr := &PR{}
 	return pr.GetList(search, user)
