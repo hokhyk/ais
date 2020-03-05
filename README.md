@@ -234,7 +234,7 @@ token=[令牌]&id=[請購單ID]
 管理員-取得請購單列表
 ```
 # HTTP POST
-url: http://[Path To]/pr/getList
+url: http://[Path To]/admin/getList
 
 # 參數
 token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]
@@ -265,7 +265,7 @@ token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結�
 管理員-取得請購單資訊
 ```
 # HTTP POST
-url: http://[Path To]/pr/getItem
+url: http://[Path To]/admin/getItem
 
 # 參數
 token=[令牌]&id=[請購單ID]
