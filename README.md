@@ -113,24 +113,28 @@ url: http://[Path To]/pr/add
 Content-Type: multipart/form-data
 
 # 參數
-token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&pay_date=[付款日]&name[]=[項目]&currency[]=[幣種]&unit_price[]=[單價]&quantity[]=[數量]&exchange_rate[]=[匯率]&tax[]=[稅額]&proof[]=[佐証資料]
+token=[令牌]&pay_to=[支付對象]&vendor_name=[廠商名稱]&pay_type=[入帳類別]&list_type=[類別]pay_method=[支付方式]&bank_account=[銀行帳號]&sign_at=[日期]&pay_date=[付款日]&pr_item=[應付項目]&serial[對應單號]&installment_plan=[分多少期]&pay_by=[第幾期]&memo=[備註]&name[]=[項目]&currency[]=[幣種]&unit_price[]=[單價]&quantity[]=[數量]&exchange_rate[]=[匯率]&tax[]=[稅額]&proof[]=[佐証資料]
 
 # 參數說明
 1. 支付對象，廠商與請款人二擇一，勾選廠商需填入廠商名稱
 2. 廠商名稱，如勾選支付對象為請款人時，資料可以為空字串
-3. 入帳類別，給數字代號，1=庶務消耗性商品，2=業務轉售類商品，3=設備類固定資產，4=原物料類商品，5=其他
+3. 入帳類別，數字，資料從[取得入帳類別API]獲得
 4. 類別，給數字代號，1=請購單，2=請款單
-5. 支付方式，1=支票，2=現金，3=匯款，4=零用金
+5. 支付方式，數字，資料從[取得支付方式API]獲得
 6. 銀行帳號，如勾選支付方式為匯款時，需填入匯款帳號，否則給空字串就好
 7. 日期，需給以下日期格式之字串YYYY/MM/DD
 8. 付款日，需給以下日期格式之字串YYYY/MM/DD
-9. 項目，可以同時多筆，名字著取一樣叫name就好
-10. 幣種，可以同時多筆，名字都取一樣叫currency就好，直接給UI上文字的中文就好
-11. 單價，可以同時多筆，名字都取一樣叫unit_price就好，需要可以有小數點
-12. 數量，可以同時多筆，名字都取一樣叫quantity就好
-13. 匯率，可以同時多筆，名字都取一樣叫exchange_rate就好，請給小數點，好比1:29.5，就是29.5
-14. 稅額，可以同時多筆，名字都取一樣叫tax就好，請給小數點，好比5%就是0.05
-15. 佐証資料，可以同時多筆，名字著取一個proof就好，到了Server會通通壓成一個zip檔
+9. 應付項目，數字，資料從[取得應付項目API]獲得
+10. 對應單號，可不填，除非有指定分期設定
+11. 分多少期，可不填，除非有指定分期設定
+12. 第幾期，可不填，除非有指定分期設定
+13. 項目，可以同時多筆，名字著取一樣叫name就好
+14. 幣種，可以同時多筆，名字都取一樣叫currency就好，資料從[取得幣別API]獲得
+15. 單價，可以同時多筆，名字都取一樣叫unit_price就好，需要可以有小數點
+16. 數量，可以同時多筆，名字都取一樣叫quantity就好
+17. 匯率，可以同時多筆，名字都取一樣叫exchange_rate就好，請給小數點，好比1:29.5，就是29.5
+18. 稅額，可以同時多筆，名字都取一樣叫tax就好，請給小數點，好比5%就是0.05
+19. 佐証資料，可以同時多筆，名字著取一個proof就好，到了Server會通通壓成一個zip檔
 
 # 回傳
 {
@@ -198,8 +202,6 @@ token=[令牌]&id=[請購單ID]
     status: 1
     list: {
         id: [ID],
-        organization_id: [部門ID],
-        organization_name: [部門名稱],
         pay_to: [支付對象],
         vendor_name: [廠商名稱],
         pay_type: [入帳類別],
@@ -215,6 +217,11 @@ token=[令牌]&id=[請購單ID]
         status: [請購單狀態],
         sign_at: [簽單日期],
         pay_date: [付款日],
+        payMethod: [應付項目],
+        serial: [對應單號],
+        installment_plan: [分多少期],
+        pay_by: [第幾期],
+        memo: [備註],
         create_at: [新增日期]
     },
     detail: [{
@@ -320,4 +327,89 @@ token=[令牌]
 
 # 回傳
 [下載檔案]
+```
+
+取得幣別
+```
+# HTTP POST
+url: http://[Path To]/currency/getCurrency
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
+```
+
+取得應付項目
+```
+# HTTP POST
+url: http://[Path To]/prItem/getPrItem
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
+```
+
+取得支付方式
+```
+# HTTP POST
+url: http://[Path To]/payMethod/getPayMethod
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
+```
+
+取得入帳類別
+```
+# HTTP POST
+url: http://[Path To]/creditType/getCreditType
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
+```
+
+取得廠商列表
+```
+# HTTP POST
+url: http://[Path To]/company/getCompany
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
 ```

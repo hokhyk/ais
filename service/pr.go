@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -77,6 +78,9 @@ func (pr *PR) Add(params *dto.PR, files *multipart.Form) *dto.ResultObject {
 	params.List.Proof = proof
 	pr.doRemoveTempFiles(uploads)
 	mysql := libs.MySQL{}.New()
+	if params.List.Serial == "" {
+		params.List.Serial = pr.getSerial(params)
+	}
 	dtoRO = pr.doInsertToDB(params, mysql)
 	return dtoRO
 }
@@ -165,16 +169,27 @@ func (pr *PR) setProofURL(results *[]dto.PrListResult) *[]dto.PrListResult {
 	return results
 }
 
+//getSerial 取得單號
+func (pr *PR) getSerial(params *dto.PR) string {
+	now := time.Now().Format("20060102")
+	userID := strconv.Itoa(params.List.UsersID)
+	num := len(userID)
+	for i := num; i <= 3; i++ {
+		userID = "0" + userID
+	}
+	times := strings.Split(time.Now().Format("15:04:05"), ":")
+	serial := "P" + now + userID + times[0] + times[1] + times[2]
+	return serial
+}
+
 //getHeaderFromDB 從資料庫取得請購單單頭
 func (pr *PR) getHeaderFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]dto.PrListResult {
 	db := m.GetAdater()
 	sql := `
 		SELECT 
 			pl.id, 
-			pl.organization_id, 
-			o.name AS organization_name, 
 			pl.pay_to, 
-			pl.vendor_name, 
+			pl.company, 
 			pl.pay_type, 
 			pl.list_type, 
 			pl.users_id, 
@@ -188,13 +203,16 @@ func (pr *PR) getHeaderFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[
 			pl.status, 
 			pl.sign_at, 
 			pl.pay_date,
+			pl.serial,
+			pl.pr_item,
+			pl.installment_plan,
+			pl.pay_by,
+			pl.memo,
 			pl.create_at
 		FROM 
 			pr_lists pl
 		INNER JOIN 
 			users u ON pl.users_id = u.id
-		INNER JOIN
-			organization o ON pl.organization_id = o.id
 		WHERE
 			pl.status = 1 %s
 		ORDER BY
@@ -252,8 +270,6 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 					pr_details pd ON pl.id = pd.pr_list_id
 				INNER JOIN 
 					users u ON pl.users_id = u.id
-				INNER JOIN
-					organization o ON pl.organization_id = o.id
 				WHERE
 					pl.status = 1 %s
 				GROUP BY

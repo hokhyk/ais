@@ -255,7 +255,6 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 
 	now := time.Now()
 
-	dtoPR.List.OrganizationID = dtoUsers.OrganizationID
 	dtoPR.List.UsersID = dtoUsers.ID
 	dtoPR.List.SignAt, _ = time.ParseInLocation(TimeFormat, signAt, time.Local)
 	dtoPR.List.PayDate, _ = time.ParseInLocation(TimeFormat, payDate, time.Local)
@@ -278,13 +277,17 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 		return dtoRO, dtoPR
 	}
 
-	vendorName := ""
-	val, ok = r.MultipartForm.Value["vendor_name"]
+	company := 0
+	val, ok = r.MultipartForm.Value["company"]
 	if ok && val[0] == "" && payTo == 1 {
-		dtoRO := RO.Build(0, "請填寫支付廠商")
+		dtoRO := RO.Build(0, "請選擇支付廠商")
 		return dtoRO, dtoPR
 	}
-	vendorName = val[0]
+	company, err = strconv.Atoi(val[0])
+	if err != nil {
+		dtoRO := RO.Build(0, "請選擇支付廠商")
+		return dtoRO, dtoPR
+	}
 
 	val, ok = r.MultipartForm.Value["pay_type"]
 	if !ok || val[0] == "" {
@@ -327,12 +330,61 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	}
 	bankAccount = val[0]
 
+	val, ok = r.MultipartForm.Value["serial"]
+	serial := ""
+	if ok && val[0] != "" {
+		serial = val[0]
+	}
+
+	val, ok = r.MultipartForm.Value["installment_plan"]
+	tmp := ""
+	if ok && val[0] != "" {
+		tmp = val[0]
+	}
+	installmentPlan, err := strconv.Atoi(tmp)
+	if ok && err != nil {
+		dtoRO := RO.Build(0, "分多少期只能填寫數字")
+		return dtoRO, dtoPR
+	}
+
+	val, ok = r.MultipartForm.Value["pay_by"]
+	tmp = ""
+	if ok && val[0] != "" {
+		tmp = val[0]
+	}
+	payBy, err := strconv.Atoi(tmp)
+	if ok && err != nil {
+		dtoRO := RO.Build(0, "第幾期只能填寫數字")
+		return dtoRO, dtoPR
+	}
+	val, ok = r.MultipartForm.Value["memo"]
+	memo := ""
+	if ok && val[0] != "" {
+		memo = val[0]
+	}
+
+	val, ok = r.MultipartForm.Value["pr_item"]
+	if !ok || val[0] == "" {
+		dtoRO := RO.Build(0, "請選擇應付項目")
+		return dtoRO, dtoPR
+	}
+	prItem, err := strconv.Atoi(val[0])
+	if err != nil {
+		dtoRO := RO.Build(0, "請選擇應付項目")
+		return dtoRO, dtoPR
+	}
+
 	dtoPR.List.PayTo = payTo
-	dtoPR.List.VendorName = vendorName
+	dtoPR.List.Company = company
 	dtoPR.List.PayType = payType
 	dtoPR.List.ListType = listType
 	dtoPR.List.PayMethod = payMethod
 	dtoPR.List.BankAccount = bankAccount
+	dtoPR.List.PrItem = prItem
+	dtoPR.List.Serial = serial
+	dtoPR.List.InstallmentPlan = installmentPlan
+	dtoPR.List.PayBy = payBy
+	dtoPR.List.Memo = memo
 
 	dtoRO = RO.Build(1, "")
 	return dtoRO, dtoPR
