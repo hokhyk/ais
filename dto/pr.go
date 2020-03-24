@@ -59,11 +59,14 @@ type GetList struct {
 
 //PrSearch 搜尋條件
 type PrSearch struct {
-	ID    int       `json:"id"`
-	Begin time.Time `json:"begin"`
-	End   time.Time `json:"end"`
-	Num   int       `json:"num"`
-	Page  int       `json:"page"`
+	ID             int       `json:"id"`
+	Serial         string    `json:"serial"`
+	OrganizationID int       `json:"organization_id"`
+	PrItem         int       `json:"pr_item"`
+	Begin          time.Time `json:"begin"`
+	End            time.Time `json:"end"`
+	Num            int       `json:"num"`
+	Page           int       `json:"page"`
 }
 
 //PrListResult 請款單列表取得結果

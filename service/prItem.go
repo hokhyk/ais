@@ -25,7 +25,7 @@ func (pi *PrItem) GetPrItem() (*dto.ResultObject, *[]dto.PrItem) {
 	return dtoRO, dtoPrItem
 }
 
-//getPrItemFromDB 從資料庫取得貨幣列表
+//getPrItemFromDB 從資料庫取得項目列表
 func (pi *PrItem) getPrItemFromDB(m MySQL) *[]dto.PrItem {
 	db := m.GetAdater()
 	dtoPrItem := &[]dto.PrItem{}

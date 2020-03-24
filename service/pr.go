@@ -255,7 +255,8 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 	sql := `
 		SELECT 
 			pd.*,
-			pl.proof
+			pl.proof,
+			pl.serial
 		FROM 
 			pr_details pd 
 		INNER JOIN 
@@ -270,6 +271,8 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 					pr_details pd ON pl.id = pd.pr_list_id
 				INNER JOIN 
 					users u ON pl.users_id = u.id
+				INNER JOIN
+					organization o ON u.organization = o.id
 				WHERE
 					pl.status = 1 %s
 				GROUP BY
@@ -293,6 +296,18 @@ func (pr *PR) getListFromDB(search *dto.PrSearch, user *dto.Users, m MySQL) *[]d
 	if search.ID != 0 {
 		where = where + " %s"
 		where = fmt.Sprintf(" AND pl.id = %d", search.ID)
+	}
+	if search.Serial != "" {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.serial LIKE '%%%s%%'", search.Serial)
+	}
+	if search.OrganizationID != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND o.id = %d", search.OrganizationID)
+	}
+	if search.PrItem != 0 {
+		where = where + " %s"
+		where = fmt.Sprintf(" AND pl.pr_item = %d", search.PrItem)
 	}
 	offset := (search.Page - 1) * search.Num
 	sql = fmt.Sprintf(sql, where, offset, search.Num)

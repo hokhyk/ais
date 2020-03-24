@@ -78,21 +78,70 @@ func (pr *PR) GetList(w http.ResponseWriter, r *http.Request) {
 	_, dtoUsers := users.GetUser(token)
 	dtoPrSearch := &dto.PrSearch{}
 
+	var err error
+
 	if r.FormValue("begin") != "" {
 		t := r.FormValue("begin") + " 00:00:00"
-		dtoPrSearch.Begin, _ = time.ParseInLocation(TimeFormat, t, time.Local)
+		dtoPrSearch.Begin, err = time.ParseInLocation(TimeFormat, t, time.Local)
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "起始日請給標準時間格式 YYYY/MM/DD")
+		fmt.Fprintf(w, content)
+		return
 	}
 	if r.FormValue("end") != "" {
 		t := r.FormValue("end") + " 23:59:59"
-		dtoPrSearch.End, _ = time.ParseInLocation(TimeFormat, t, time.Local)
+		dtoPrSearch.End, err = time.ParseInLocation(TimeFormat, t, time.Local)
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "結束日請給標準時間格式 YYYY/MM/DD")
+		fmt.Fprintf(w, content)
+		return
 	}
 	dtoPrSearch.Num = 10
 	if r.FormValue("num") != "" {
-		dtoPrSearch.Num, _ = strconv.Atoi(r.FormValue("num"))
+		dtoPrSearch.Num, err = strconv.Atoi(r.FormValue("num"))
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "每頁筆數只能為數字")
+		fmt.Fprintf(w, content)
+		return
 	}
 	dtoPrSearch.Page = 1
 	if r.FormValue("page") != "" {
-		dtoPrSearch.Page, _ = strconv.Atoi(r.FormValue("page"))
+		dtoPrSearch.Page, err = strconv.Atoi(r.FormValue("page"))
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "第幾頁只能為數字")
+		fmt.Fprintf(w, content)
+		return
+	}
+	if r.FormValue("id") != "" {
+		dtoPrSearch.ID, err = strconv.Atoi(r.FormValue("id"))
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "id只能為數字")
+		fmt.Fprintf(w, content)
+		return
+	}
+	if r.FormValue("organization_id") != "" {
+		dtoPrSearch.OrganizationID, err = strconv.Atoi(r.FormValue("organization_id"))
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "單位id只能為數字")
+		fmt.Fprintf(w, content)
+		return
+	}
+	if r.FormValue("pr_item") != "" {
+		dtoPrSearch.PrItem, err = strconv.Atoi(r.FormValue("pr_item"))
+	}
+	if err != nil {
+		content := RO.BuildJSON(0, "項目只能為數字")
+		fmt.Fprintf(w, content)
+		return
+	}
+	if r.FormValue("serial") != "" {
+		dtoPrSearch.Serial = r.FormValue("serial")
 	}
 
 	dtoRO, dtoGetList := spr.GetList(dtoPrSearch, dtoUsers)

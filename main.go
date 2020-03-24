@@ -24,6 +24,7 @@ var prItem = controller.PrItem{}.New()
 var payMethod = controller.PayMethod{}.New()
 var creditType = controller.CreditType{}.New()
 var company = controller.Company{}.New()
+var organization = controller.Organization{}.New()
 
 var suser = service.Users{}.New()
 
@@ -115,5 +116,7 @@ func main() {
 	http.Handle("/creditType/getCreditType", middleware(handler, []string{"POST"}, 0))
 	handler = http.HandlerFunc(company.GetCompany)
 	http.Handle("/company/getCompany", middleware(handler, []string{"POST"}, 0))
+	handler = http.HandlerFunc(organization.GetOrganization)
+	http.Handle("/organization/getOrganization", middleware(handler, []string{"POST"}, 0))
 	http.ListenAndServe(port, nil)
 }

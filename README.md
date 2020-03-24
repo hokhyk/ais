@@ -164,13 +164,16 @@ token=[令牌]&id=[請購單號]
 url: http://[Path To]/pr/getList
 
 # 參數
-token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]
+token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]&id=[ID]&serial=[編號]&organization_id=[單位ID]&pr_item=[項目ID]
 
 # 參數說明
 1. 第..頁，可不給，預設從第1頁開始
 2. 每頁筆數，可不給，預設一頁十筆
 3. 起始日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
 4. 結束日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+5. ID，可不給，可透過id做查詢
+6. 單位ID，可不給，可透過單位做查詢
+7. 項目，可不給，可透過項目做查詢
 
 # 回傳
 {
@@ -244,13 +247,16 @@ token=[令牌]&id=[請購單ID]
 url: http://[Path To]/admin/getList
 
 # 參數
-token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]
+token=[令牌]&page=[第..頁]&num=[每頁筆數]&begin[起始日期]&end=[結束日期]&id=[ID]&serial=[編號]&organization_id=[單位ID]&pr_item=[項目ID]
 
 # 參數說明
 1. 第..頁，可不給，預設從第1頁開始
 2. 每頁筆數，可不給，預設一頁十筆
 3. 起始日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
 4. 結束日期，可不給，有給會依簽單日期範圍做抓取，格式YYYY/MM/DD
+5. ID，可不給，可透過id做查詢
+6. 單位ID，可不給，可透過單位做查詢
+7. 項目，可不給，可透過項目做查詢
 
 # 回傳
 {
@@ -401,6 +407,23 @@ url: http://[Path To]/creditType/getCreditType
 ```
 # HTTP POST
 url: http://[Path To]/company/getCompany
+
+# 參數說明
+將key給HTML項目做顯示用，將id當做value回傳
+
+# 回傳
+[
+    {
+        "id":[ID],
+        "key":[鍵]
+    }, { ... }
+]
+```
+
+取得單位列表
+```
+# HTTP POST
+url: http://[Path To]/organization/getOrganization
 
 # 參數說明
 將key給HTML項目做顯示用，將id當做value回傳
