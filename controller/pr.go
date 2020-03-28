@@ -316,30 +316,28 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 		dtoRO := RO.Build(0, "請勾選支付對象")
 		return dtoRO, dtoPR
 	}
-	if val[0] == "" {
-		dtoRO := RO.Build(0, "請勾選支付對象")
-		return dtoRO, dtoPR
-	}
 	payTo, err := strconv.Atoi(val[0])
 	if err != nil {
 		dtoRO := RO.Build(0, "請勾選支付對象")
 		return dtoRO, dtoPR
 	}
 
-	company := 0
 	val, ok = r.MultipartForm.Value["company"]
-	if ok && val[0] == "" && payTo == 1 {
+	if !ok && payTo == 1 {
 		dtoRO := RO.Build(0, "請選擇支付廠商")
 		return dtoRO, dtoPR
 	}
-	company, err = strconv.Atoi(val[0])
-	if err != nil {
+	company := 0
+	if ok && len(val) > 0 {
+		company, err = strconv.Atoi(val[0])
+	}
+	if ok && err != nil {
 		dtoRO := RO.Build(0, "請選擇支付廠商")
 		return dtoRO, dtoPR
 	}
 
 	val, ok = r.MultipartForm.Value["pay_type"]
-	if !ok || val[0] == "" {
+	if !ok {
 		dtoRO := RO.Build(0, "請選擇入賬類別")
 		return dtoRO, dtoPR
 	}
@@ -350,7 +348,7 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	}
 
 	val, ok = r.MultipartForm.Value["list_type"]
-	if !ok || val[0] == "" {
+	if !ok {
 		dtoRO := RO.Build(0, "請選擇類別")
 		return dtoRO, dtoPR
 	}
@@ -361,7 +359,7 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	}
 
 	val, ok = r.MultipartForm.Value["pay_method"]
-	if !ok || val[0] == "" {
+	if !ok {
 		dtoRO := RO.Build(0, "請選擇支付方式")
 		return dtoRO, dtoPR
 	}
@@ -372,48 +370,49 @@ func (pr *PR) filterList(r *http.Request, dtoPR *dto.PR) (*dto.ResultObject, *dt
 	}
 
 	val, ok = r.MultipartForm.Value["bank_account"]
-	bankAccount := ""
-	if ok && val[0] == "" && payMethod == 3 {
+	if !ok && payMethod == 3 {
 		dtoRO := RO.Build(0, "請輸入銀行帳號")
 		return dtoRO, dtoPR
 	}
-	bankAccount = val[0]
+	bankAccount := ""
+	if ok && len(val) > 0 {
+		bankAccount = val[0]
+	}
 
 	val, ok = r.MultipartForm.Value["serial"]
 	serial := ""
-	if ok && val[0] != "" {
+	if ok && len(val) > 0 {
 		serial = val[0]
 	}
 
 	val, ok = r.MultipartForm.Value["installment_plan"]
-	tmp := ""
-	if ok && val[0] != "" {
-		tmp = val[0]
+	installmentPlan := 0
+	if len(val) > 0 {
+		installmentPlan, err = strconv.Atoi(val[0])
 	}
-	installmentPlan, err := strconv.Atoi(tmp)
 	if ok && err != nil {
 		dtoRO := RO.Build(0, "分多少期只能填寫數字")
 		return dtoRO, dtoPR
 	}
 
 	val, ok = r.MultipartForm.Value["pay_by"]
-	tmp = ""
-	if ok && val[0] != "" {
-		tmp = val[0]
+	payBy := 0
+	if len(val) > 0 {
+		payBy, err = strconv.Atoi(val[0])
 	}
-	payBy, err := strconv.Atoi(tmp)
 	if ok && err != nil {
 		dtoRO := RO.Build(0, "第幾期只能填寫數字")
 		return dtoRO, dtoPR
 	}
+
 	val, ok = r.MultipartForm.Value["memo"]
 	memo := ""
-	if ok && val[0] != "" {
+	if ok {
 		memo = val[0]
 	}
 
 	val, ok = r.MultipartForm.Value["pr_item"]
-	if !ok || val[0] == "" {
+	if !ok {
 		dtoRO := RO.Build(0, "請選擇應付項目")
 		return dtoRO, dtoPR
 	}
